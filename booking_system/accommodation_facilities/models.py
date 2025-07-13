@@ -1,7 +1,9 @@
 from django.db import models
-from datetime import date
+from datetime import date, timedelta
+from django.core.exceptions import ValidationError
 from users.models import Users
-
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 class Amenity(models.Model):
     amenity = models.CharField(max_length=50)
@@ -9,6 +11,12 @@ class Amenity(models.Model):
     def __str__(self):
         return self.amenity
 
+class Aditional_service(models.Model):
+    aditional_service = models.CharField(max_length=50)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.aditional_service
 
 class Accommodation(models.Model):
     ACCOMMODATION_TYPES = [
@@ -39,7 +47,7 @@ class Accommodation(models.Model):
     number_of_bedrooms = models.PositiveIntegerField()
     number_of_beds = models.PositiveIntegerField()
     number_of_bathrooms = models.PositiveIntegerField()
-    price_per_night = models.DecimalField( max_digits=10, decimal_places=2)
+    price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
     available = models.BooleanField(default=True)
     amenities = models.ManyToManyField(Amenity)
     image = models.ImageField(upload_to="accommodation_images")
@@ -51,14 +59,9 @@ class Accommodation(models.Model):
     def get_price_for_date(self, query_date: date):
         seasonal = self.seasonal_prices.filter(start_date__lte=query_date, end_date__gte=query_date).first()
         return seasonal.price_per_night if seasonal else self.price_per_night
-    def is_available_for_dates(self, start_date, end_date):
-        # Sprawdź, czy istnieje rezerwacja kolidująca z podanym terminem
-        conflicting_bookings = self.bookings.filter(
-            start_date__lt=end_date,
-            end_date__gt=start_date
-        )
-        return not conflicting_bookings.exists()
 
+    def is_available_for_dates(self, start_date, end_date):
+        return not self.bookings.filter(start_date__lt=end_date, end_date__gt=start_date).exists()
 
 class Address(models.Model):
     accommodation = models.OneToOneField(Accommodation, on_delete=models.CASCADE, related_name="address")
@@ -68,8 +71,6 @@ class Address(models.Model):
     street = models.CharField(max_length=100)
     building_number = models.CharField(max_length=10)
     apartment_number = models.CharField(max_length=10, blank=True, null=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
 
     def __str__(self):
         parts = [self.street, self.building_number]
@@ -90,21 +91,65 @@ class SeasonalPrice(models.Model):
 
     def __str__(self):
         return f"{self.accommodation.name}: {self.start_date}–{self.end_date} → {self.price_per_night} PLN"
+
     def clean(self):
         if self.start_date >= self.end_date:
             raise ValidationError("Data początkowa musi być wcześniejsza niż data końcowa.")
-        if self.start_date < date.today():
-            raise ValidationError("Data początkowa nie może być w przeszłości.")
         if self.price_per_night <= 0:
             raise ValidationError("Cena za noc musi być większa niż zero.")
-from django.core.exceptions import ValidationError
 
 class Booking(models.Model):
-    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name="bookings")
+    accommodation = models.ForeignKey('Accommodation', on_delete=models.CASCADE, related_name="bookings")
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     start_date = models.DateField()
     end_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    additional_services = models.ManyToManyField('Aditional_service', blank=True)
+    number_of_guests = models.PositiveIntegerField(default=1)
+    class Meta:
+        ordering = ["start_date"]
+        verbose_name = "Rezerwacja"
+        verbose_name_plural = "Rezerwacje"
 
     def __str__(self):
-        return f"Rezerwacja {self.accommodation.name} od {self.start_date} do {self.end_date} przez {self.user.username}"
+        return f"Booking for {self.accommodation.name} by {self.user.username} from {self.start_date} to {self.end_date}"
+
+    def clean(self):
+        if self.start_date >= self.end_date:
+            raise ValidationError("Data początkowa musi być wcześniejsza niż data końcowa.")
+
+        overlapping = Booking.objects.filter(
+            accommodation=self.accommodation,
+            start_date__lt=self.end_date,
+            end_date__gt=self.start_date,
+        )
+        if self.pk:
+            overlapping = overlapping.exclude(pk=self.pk)
+
+        if overlapping.exists():
+            raise ValidationError("W tym terminie istnieje już rezerwacja dla tego obiektu.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)  # Zapisz do DB, żeby mieć ID
+
+    def calculate_total_price(self):
+        num_nights = (self.end_date - self.start_date).days
+        total = 0
+        current_date = self.start_date
+
+        while current_date < self.end_date:
+            total += self.accommodation.get_price_for_date(current_date)
+            current_date += timedelta(days=1)
+
+        for service in self.additional_services.all():
+            total += service.price
+
+        self.total_price = total
+        self.save(update_fields=["total_price"])
+
+@receiver(m2m_changed, sender=Booking.additional_services.through)
+def update_booking_total_price(sender, instance, action, **kwargs):
+    if action in ["post_add", "post_remove", "post_clear"]:
+        instance.calculate_total_price()

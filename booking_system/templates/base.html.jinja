@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Booking System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <header>
+        <h1><a href="/">Booking System</a></h1>
+        <nav>
+            <ul>
+                <li><a href="/">Strona główna</a></li>
+                <li><a href="/accommodations/">Noclegi</a></li>
+                <li><a href="/dashboard/">Moje konto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        <!-- Treść strony -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} Booking System. Wszelkie prawa zastrzeżone.</p>
+    </footer>
+</body>
+</html>

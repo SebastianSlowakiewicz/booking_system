@@ -1,0 +1,32 @@
+{% extends "base.html.jinja" %}
+
+{% block title %}
+Strona Główna - Booking System
+{% endblock %}
+
+{% block content %}
+<h1>Zarezerwuj nocleg</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <br>
+    <label for="start_date">Data rozpoczęcia:</label>
+    <input type="date" name="start_date" id="start_date" required>
+    <br>
+    <label for="end_date">Data zakończenia:</label>
+    <input type="date" name="end_date" id="end_date" required>
+    <br>
+    <label for="accommodation">Wybierz nocleg:</label>
+    <select name="accommodation" id="accommodation" required>
+        {% for accommodation in accommodations %}
+        <option value="{{ accommodation }}">{{ accommodation }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <label for="guests">Liczba gości:</label>
+    <input type="number" name="guests" id="guests" min="1" required>
+    <br>
+
+    <button type="submit">Zarezerwuj</button>
+</form>
+{% endblock %}
