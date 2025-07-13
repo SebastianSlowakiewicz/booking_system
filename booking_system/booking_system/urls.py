@@ -5,6 +5,8 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from booking_system import views as booking_views
+from accommodation_facilities import views as amenities_views
+
 
 
 urlpatterns = [

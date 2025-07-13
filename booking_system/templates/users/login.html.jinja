@@ -1,0 +1,32 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+<h2>Logowanie</h2>
+<br>
+{% if messages %}
+    {% for message in messages %}
+        <p class="alert alert-danger" style="max-width: 400px;" role="alert">{{ message }}</p>
+    {% endfor %}
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <div class="form-floating mb-3" style="max-width: 400px;">
+        <input type="username" class="form-control" id="floatingInput" placeholder="Nazwa123" name="username" required>
+        <label for="floatingInput">Nazwa użytkownika:</label>
+      </div>
+    <div class="form-floating" style="max-width: 400px;">
+        <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password"
+        required>
+        <label for="floatingPassword">Hasło:</label>
+      </div>
+    <br>
+    <div style="display: flex; align-items: center; gap: 10px; max-width: 400px;">
+        <button type="submit" class="btn btn-outline-success">Zaloguj</button>
+        <div style="border-left: 1px solid #ccc; height: 24px;"></div>
+        <p style="margin: 0;"><a href="{% url 'password_reset' %}" style="color: green; text-decoration: none;">Nie pamiętam hasła</a></p>
+    </div>
+</form>
+
+<br>
+
+<p style="margin: 0;">Nie masz konta?<a href="{% url 'register' %}" style="color: green; text-decoration: none;"> Zarejestruj się!</a></p>
+{% endblock %}

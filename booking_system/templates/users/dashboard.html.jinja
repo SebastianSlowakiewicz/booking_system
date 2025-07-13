@@ -1,7 +1,7 @@
 {% extends "base.html.jinja" %}
 
 <div style="display: flex; flex-direction: row;">
-    {% block left_panel %}
+    {% block content %}
     <div style="width: 100%; height:100%; padding: 20px; border-right: 1px solid #ccc;">
         <h2>Witaj, {{ request.user.username }}!</h2>
         <p>To jest Twój panel użytkownika.</p>
@@ -20,19 +20,3 @@
         <p>Jeśli chcesz zmienić swoje dane, przejdź do sekcji <a href="">Edytuj profil</a>.</p>
     </div>
     {% endblock %}
-
-    {% block right_panel %}
-    <div style="width: 50%; padding: 20px;">
-        <h2>Twoje wypożyczenia i transakcje</h2>
-        <p>W tej sekcji możesz zarządzać swoimi wypożyczeniami i przeglądać historię transakcji.</p>
-        <br>
-        <p>Jeśli chcesz wypożyczyć samochód, przejdź do sekcji <a href="{% url 'cars' %}">Samochody</a>.</p>
-        <br>
-        <p>Jeśli chcesz przeglądać kategorie samochodów, przejdź do sekcji <a href="{% url 'categories' %}">Kategorie</a>.</p>
-        <br>
-        <p>Jeśli chcesz zobaczyć historię swoich wypożyczeń, przejdź do sekcji <a href="">Historia wypożyczeń</a>.</p>
-        <br>
-        <p>Jeśli chcesz zobaczyć szczegóły swoich transakcji, przejdź do sekcji <a href="">Transakcje</a>.</p>
-    </div>
-</div>
-{% endblock %}

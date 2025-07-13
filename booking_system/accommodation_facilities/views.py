@@ -3,10 +3,8 @@ from .forms import BookingForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .forms import BookingForm
+from .models import Amenity
 
-from django.shortcuts import render, redirect
-from .forms import BookingForm
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def index(request):
@@ -21,3 +19,14 @@ def index(request):
         form = BookingForm()
 
     return render(request, 'index.html', {'form': form})
+
+def amenities_view(request):
+    grouped_amenities = {}
+    for room_type, display_name in Amenity.ROOM_TYPES:
+        grouped_amenities[display_name] = Amenity.objects.filter(room_type=room_type)
+    
+    grouped_amenities["Inne"] = Amenity.objects.filter(room_type__isnull=True)
+
+    return render(request, "amenities.html.jinja", {
+        "grouped_amenities": grouped_amenities
+    })

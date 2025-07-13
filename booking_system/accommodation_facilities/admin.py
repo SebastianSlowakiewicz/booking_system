@@ -12,12 +12,16 @@ class AddressInline(admin.StackedInline):
 class SeasonalPriceInline(admin.TabularInline):
     model = SeasonalPrice
     extra = 1
+    fields = ("start_date", "end_date", "price_per_night")
+
 
 class BookingInline(admin.TabularInline):
     model = Booking
     extra = 0
-    readonly_fields = ("user", "start_date", "end_date", "created_at", "total_price")
-    fields = ("user", "start_date", "end_date", "created_at", "total_price")
+    readonly_fields = ("user", "start_date", "end_date", "created_at", "total_price", "number_of_adults", "number_of_children", "number_of_guests")
+    fields = ("start_date", "end_date", "total_price", "user", "created_at", "number_of_adults", "number_of_children", "number_of_guests")
+    show_change_link = True
+    verbose_name = "Rezerwacja"
     can_delete = False
     show_change_link = True
 
@@ -52,7 +56,7 @@ class AmenityAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("accommodation", "user", "start_date", "end_date", "created_at", "total_price")
+    list_display = ("accommodation", "start_date", "end_date", "total_price", "number_of_guests", "user", "created_at")
     list_filter = ("start_date", "end_date", "accommodation")
     search_fields = ("accommodation__name", "user__username", "user__email")
 
