@@ -26,7 +26,7 @@ def user_login(request):
         
         if user is not None:
             login(request, user)
-            return redirect("dashboard")  # Zamień 'dashboard' na nazwę swojej strony użytkownika
+            return redirect("dashboard")
         else:
             messages.error(request, "Nieprawidłowa nazwa użytkownika lub hasło.")
     
