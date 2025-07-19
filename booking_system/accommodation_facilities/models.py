@@ -259,13 +259,13 @@ class Booking(models.Model):
         # Usługi wliczone w cenę sezonową nie są dodawane do 'services_price'
         for service in self.additional_services.all():
             if service.pk not in included_services_in_season:
-                services_price += service.price * num_nights
+                services_price += service.price
 
         # Obliczanie opłaty za dodatkowych gości
         total_guests = self.number_of_adults + self.number_of_children
         if total_guests > 6:
             extra_guests = total_guests - 6
-            extra_guest_cost = Decimal(str(extra_guests * 100)) * num_nights # 100 PLN za osobę za dobę
+            extra_guest_cost = Decimal(str(extra_guests * 50)) * num_nights # 50 PLN za osobę za dobę
 
         self.accommodation_subtotal_price = accommodation_price
         self.additional_services_subtotal_price = services_price

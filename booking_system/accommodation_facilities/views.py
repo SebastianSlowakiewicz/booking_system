@@ -41,7 +41,7 @@ def create_booking(request):
 
     context = {
         'form': form,
-        'page_title': 'Utwórz nową rezerwację',
+        'page_title': 'Zarezerwuj swój pobyt',
     }
     return render(request, 'accommodation_facilities/create_booking.html.jinja', context)
 
@@ -141,7 +141,7 @@ def calculate_booking_price_ajax(request):
             additional_services_queryset = Aditional_service.objects.filter(pk__in=selected_services_ids)
             for service in additional_services_queryset:
                 if service.pk not in included_services_in_season: # TYLKO jeśli nie jest wliczona w sezonową
-                    service_total_price = service.price * num_nights
+                    service_total_price = service.price
                     services_price += service_total_price
                     detailed_services_prices.append({
                         'name': service.aditional_service,
@@ -152,7 +152,7 @@ def calculate_booking_price_ajax(request):
         # Obliczanie opłaty za dodatkowych gości
         if total_guests > 6:
             extra_guests = total_guests - 6
-            extra_guest_fee = Decimal(str(extra_guests * 100)) * num_nights
+            extra_guest_fee = Decimal(str(extra_guests * 50)) * num_nights
 
         total_price = accommodation_price + services_price + extra_guest_fee
 

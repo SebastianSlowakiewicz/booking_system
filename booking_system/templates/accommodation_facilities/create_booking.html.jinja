@@ -1,9 +1,9 @@
 {% extends "base.html.jinja" %}
 
-{% block title %}Udogodnienia w pokojach{% endblock %}
+{% block title %}Zarezerwuj swój pobyt!{% endblock %}
 
 {% block content %}
-<div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+<div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg mx-auto">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ page_title }}</h1>
 
     {% if messages %}
@@ -212,7 +212,7 @@
                             breakdownHtml += `<p>Usługi dodatkowe:</p>`;
                             breakdownHtml += `<ul class="list-disc list-inside ml-4">`;
                             data.detailed_services_prices.forEach(service => {
-                                breakdownHtml += `<li>${service.name}: ${service.price_per_night.toFixed(2)} PLN/doba (łącznie: ${service.total_for_service.toFixed(2)} PLN)</li>`;
+                                breakdownHtml += `<li>${service.name}: ${service.price_per_night.toFixed(2)} PLN (łącznie: ${service.total_for_service.toFixed(2)} PLN)</li>`;
                             });
                             breakdownHtml += `</ul>`;
                         } else {

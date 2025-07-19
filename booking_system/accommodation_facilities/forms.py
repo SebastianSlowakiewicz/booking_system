@@ -55,7 +55,7 @@ class BookingForm(forms.ModelForm):
         """
         Generates the label for each additional service checkbox, including its price per night.
         """
-        return f"{obj.aditional_service} ({obj.price:.2f} PLN/doba)"
+        return f"{obj.aditional_service} ({obj.price:.2f} PLN)" if obj.price else f"{obj.aditional_service} (bezpłatne)"
 
     def clean(self):
         # Call the parent clean method to get initial cleaned data

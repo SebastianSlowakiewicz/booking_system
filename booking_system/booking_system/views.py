@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 
+
 def index(request):
     return render(request, 'index.html.jinja')
 def index(request):
