@@ -2,288 +2,303 @@
 
 {% block title %}Zarezerwuj swój pobyt!{% endblock %}
 
+{% block head_extra %}
+    <style>
+        /* Custom styles for disabled additional services */
+        .additional-service-item.disabled-checkbox-item {
+            opacity: 0.6;
+            pointer-events: none; /* Disable clicks on the entire item */
+        }
+        .additional-service-item.disabled-checkbox-item .form-check-input:disabled + .form-check-label {
+            cursor: not-allowed;
+        }
+
+        /* Simple loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, .1);
+            border-left-color: #0d6efd; /* Bootstrap primary blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto; /* Center the spinner */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Styl dla list błędów */
+        .errorlist {
+            color: #dc3545; /* Bootstrap red for errors */
+            font-size: 0.875em; /* Small font size */
+            margin-top: 0.25rem; /* Small margin above */
+            padding-left: 0; /* Remove default ul padding */
+            list-style: none; /* Remove bullet points */
+        }
+        .errorlist li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg mx-auto">
-    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ page_title }}</h1>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-lg p-4">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">{{ page_title }}</h1>
 
-    {% if messages %}
-        <ul class="mb-4">
-            {% for message in messages %}
-                <li class="p-3 rounded-md {% if message.tags %} {{ message.tags }} {% endif %}
-                    {% if 'success' in message.tags %} bg-green-100 text-green-800 border border-green-200
-                    {% elif 'error' in message.tags %} bg-red-100 text-red-800 border border-red-200
-                    {% else %} bg-blue-100 text-blue-800 border border-blue-200 {% endif %}">
-                    {{ message }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+                    {% if messages %}
+                        <ul class="list-unstyled mb-4">
+                            {% for message in messages %}
+                                <li class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
 
-    <form method="post" class="space-y-6" id="booking-form">
-        {% csrf_token %}
+                    <form method="post" id="booking-form">
+                        {% csrf_token %}
 
-        {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ field.label }}
-                </label>
-                {% if field.field.widget.input_type == 'checkbox' or field.field.widget.input_type == 'radio' %}
-                    {# Dodajemy id="additional-services-container" dla manipulacji JS #}
-                    <div id="additional-services-container" class="flex items-center space-x-4 flex-wrap">
-                        {% for choice in field %}
-                            <div class="flex items-center mr-4 mb-2 additional-service-item" data-service-id="{{ choice.data.value }}"> {# Dodano klasę i atrybut data-service-id #}
-                                {{ choice.tag }}
-                                <label for="{{ choice.id_for_label }}" class="checkbox-label">{{ choice.choice_label }}</label>
+                        {# WYŚWIETLANIE WSZYSTKICH BŁĘDÓW FORMULARZA DLA CELÓW DEBUGOWANIA #}
+                        {% if form.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <strong>Proszę poprawić następujące błędy:</strong>
+                                <ul class="list-unstyled mb-0">
+                                    {% for field_name, errors in form.errors.items %}
+                                        {% if field_name == '__all__' %}
+                                            {% for error in errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            {# Uproszczono wyświetlanie nazwy pola, aby uniknąć błędu składni #}
+                                            <li><strong>{{ field_name }}:</strong>
+                                                <ul class="list-unstyled ps-3">
+                                                    {% for error in errors %}
+                                                        <li>{{ error }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% for field in form %}
+                            <div class="mb-3"> {# Bootstrap margin bottom for spacing #}
+                                {% if field.field.widget.input_type == 'checkbox' or field.field.widget.input_type == 'radio' %}
+                                    <label class="form-label">{{ field.label }}</label>
+                                    <div id="additional-services-container">
+                                        {% for choice in field %}
+                                            <div class="form-check additional-service-item" data-service-id="{{ choice.data.value }}">
+                                                {{ choice.tag }} {# This renders the <input type="checkbox"> #}
+                                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                    {{ choice.choice_label }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                    {{ field }} {# This will render the input with form-control class if defined in forms.py #}
+                                {% endif %}
+
+                                {% if field.help_text %}
+                                    <div class="form-text text-muted">{{ field.help_text }}</div>
+                                {% endif %}
+                                {# Błędy dla pojedynczego pola są wyświetlane tutaj #}
+                                {% if field.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in field.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
                             </div>
                         {% endfor %}
-                    </div>
-                {% else %}
-                    {{ field }}
-                {% endif %}
 
-                {% if field.help_text %}
-                    <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
-                {% endif %}
-                {% if field.errors %}
-                    <ul class="errorlist">
-                        {% for error in field.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                        {# Miejsce na wyświetlanie dynamicznej ceny #}
+                        <div class="text-center mt-4">
+                            <h4 id="total-price-display">Cena całkowita: -- PLN</h4>
+                            <div id="price-breakdown-display" class="text-start text-muted small mt-2"></div>
+                            <div id="loading-indicator" class="d-none loading-spinner"></div> {# Bootstrap d-none for hidden #}
+                        </div>
+
+                        <div class="d-grid mt-4"> {# d-grid for full-width button #}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Zarezerwuj
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        {% endfor %}
-
-        {# Miejsce na wyświetlanie dynamicznej ceny #}
-        <div class="text-center">
-            <p id="total-price-display">Cena całkowita: -- PLN</p>
-            <div id="price-breakdown-display" class="text-left text-sm text-gray-600 mt-2"></div>
-            <div id="loading-indicator" class="hidden loading-spinner"></div>
         </div>
-
-        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Zarezerwuj
-        </button>
-    </form>
+    </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('booking-form');
-        const accommodationSelect = document.getElementById('id_accommodation');
-        const startDateInput = document.getElementById('id_start_date');
-        const endDateInput = document.getElementById('id_end_date');
-        const adultsInput = document.getElementById('id_number_of_adults');
-        const childrenInput = document.getElementById('id_number_of_children');
-        const additionalServicesCheckboxes = document.querySelectorAll('input[name="additional_services"]');
-        const additionalServiceItems = document.querySelectorAll('.additional-service-item');
-        const totalPriceDisplay = document.getElementById('total-price-display');
-        const priceBreakdownDisplay = document.getElementById('price-breakdown-display');
-        const loadingIndicator = document.getElementById('loading-indicator');
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('booking-form');
+    const accommodationSelect = document.getElementById('id_accommodation');
+    const startDateInput = document.getElementById('id_start_date');
+    const endDateInput = document.getElementById('id_end_date');
+    const adultsInput = document.getElementById('id_number_of_adults');
+    const childrenInput = document.getElementById('id_number_of_children');
+    const additionalServicesContainer = document.getElementById('additional-services-container');
+    const additionalServicesCheckboxes = additionalServicesContainer.querySelectorAll('input[name="additional_services"]');
+    const additionalServiceItems = additionalServicesContainer.querySelectorAll('.additional-service-item');
+    const totalPriceDisplay = document.getElementById('total-price-display');
+    const priceBreakdownDisplay = document.getElementById('price-breakdown-display');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
-        // Funkcja do pobierania tokena CSRF
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
-        const csrftoken = getCookie('csrftoken');
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-        // Store the last known locked services IDs
-        let lastLockedServicesIds = [];
+    let lastLockedServicesIds = [];
+    let requestDebounceTimer;
 
-        async function updatePrice() {
-            const accommodationId = accommodationSelect.value;
-            const startDate = startDateInput.value;
-            const endDate = endDateInput.value;
-            const numberOfAdults = adultsInput.value;
-            const numberOfChildren = childrenInput.value;
+    async function updatePrice() {
+        const accommodationId = accommodationSelect.value;
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        const numberOfAdults = adultsInput.value;
+        const numberOfChildren = childrenInput.value;
 
-            // For AJAX call, send only user-selected (non-disabled) services
-            const userSelectedServicesForAjax = Array.from(additionalServicesCheckboxes)
-                                        .filter(checkbox => checkbox.checked && !checkbox.disabled)
-                                        .map(checkbox => checkbox.value);
+        const userSelectedServicesForAjax = Array.from(additionalServicesCheckboxes)
+            .filter(checkbox => checkbox.checked && !checkbox.disabled)
+            .map(checkbox => checkbox.value);
 
-            priceBreakdownDisplay.innerHTML = '';
+        priceBreakdownDisplay.innerHTML = '';
 
-            if (!accommodationId || !startDate || !endDate || numberOfAdults === '' || numberOfChildren === '') {
-                totalPriceDisplay.textContent = 'Cena całkowita: -- PLN';
-                // Reset all checkboxes and enable them when data is incomplete
+        if (!accommodationId || !startDate || !endDate || numberOfAdults === '' || numberOfChildren === '') {
+            totalPriceDisplay.textContent = 'Cena całkowita: -- PLN';
+            additionalServiceItems.forEach(item => {
+                item.classList.remove('disabled-checkbox-item');
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.disabled = false;
+                    checkbox.checked = false;
+                }
+            });
+            lastLockedServicesIds = [];
+            return;
+        }
+
+        loadingIndicator.classList.remove('d-none');
+
+        try {
+            const response = await fetch('{% url "accommodation_facilities:calculate_booking_price_ajax" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({
+                    accommodation_id: accommodationId,
+                    start_date: startDate,
+                    end_date: endDate,
+                    number_of_adults: parseInt(numberOfAdults),
+                    number_of_children: parseInt(numberOfChildren),
+                    additional_services: userSelectedServicesForAjax,
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                totalPriceDisplay.textContent = `Cena całkowita: ${data.total_price.toFixed(2)} PLN`;
+                let breakdownHtml = `<ul class="list-unstyled">
+                    <li>Zakwaterowanie: <strong>${data.accommodation_subtotal_price.toFixed(2)} PLN</strong></li>`;
+
+                lastLockedServicesIds = data.locked_services_ids || [];
+
                 additionalServiceItems.forEach(item => {
-                    item.classList.remove('disabled-checkbox-item');
                     const checkbox = item.querySelector('input[type="checkbox"]');
-                    if (checkbox) {
-                        checkbox.disabled = false;
-                        checkbox.checked = false; // Uncheck all if no data
-                    }
-                });
-                lastLockedServicesIds = []; // Clear locked services
-                return;
-            }
+                    const serviceId = parseInt(item.dataset.serviceId);
 
-            loadingIndicator.classList.remove('hidden');
-
-            try {
-                const response = await fetch('{% url "accommodation_facilities:calculate_booking_price_ajax" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken,
-                    },
-                    body: JSON.stringify({
-                        accommodation_id: accommodationId,
-                        start_date: startDate,
-                        end_date: endDate,
-                        number_of_adults: parseInt(numberOfAdults),
-                        number_of_children: parseInt(numberOfChildren),
-                        additional_services: userSelectedServicesForAjax, // Send only user-selected for AJAX calculation
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    totalPriceDisplay.textContent = `Cena całkowita: ${data.total_price.toFixed(2)} PLN`;
-                    let breakdownHtml = `<p>Zakwaterowanie: ${data.accommodation_subtotal_price.toFixed(2)} PLN</p>`;
-
-                    lastLockedServicesIds = data.locked_services_ids || []; // Update last known locked services
-
-                    // Logic for blocking/unblocking and checking additional services
-                    additionalServiceItems.forEach(item => {
-                        const checkbox = item.querySelector('input[type="checkbox"]');
-                        const serviceId = parseInt(item.dataset.serviceId);
-
-                        if (data.is_seasonal_services_locked && lastLockedServicesIds.includes(serviceId)) {
-                            // Usługa jest wliczona w cenę sezonową - zablokuj i zaznacz
-                            item.classList.add('disabled-checkbox-item');
-                            if (checkbox) {
-                                checkbox.disabled = true;
-                                checkbox.checked = true;
-                            }
-                        } else {
-                            // Usługa nie jest wliczona w cenę sezonową - odblokuj
-                            item.classList.remove('disabled-checkbox-item');
-                            if (checkbox) {
-                                checkbox.disabled = false;
-                                // Zachowaj stan zaznaczenia użytkownika, jeśli nie jest zablokowana
-                                // (checkbox.checked jest już ustawione przez przeglądarkę na podstawie inputu użytkownika)
-                            }
+                    if (data.is_seasonal_services_locked && lastLockedServicesIds.includes(serviceId)) {
+                        item.classList.add('disabled-checkbox-item');
+                        if (checkbox) {
+                            checkbox.disabled = true;
+                            checkbox.checked = true;
                         }
-                    });
-
-
-                    if (data.is_seasonal_services_locked) {
-                        breakdownHtml += `<p>Usługi dodatkowe (wliczone w cenę sezonową):</p>`;
-                        if (lastLockedServicesIds.length > 0) {
-                            breakdownHtml += `<ul class="list-disc list-inside ml-4">`;
-                            // Pobierz nazwy wliczonych usług z DOM, aby wyświetlić je w podsumowaniu
-                            const allServicesLabels = Array.from(additionalServiceItems).map(item => ({
-                                id: parseInt(item.dataset.serviceId),
-                                name: item.querySelector('.checkbox-label').textContent.split('(')[0].trim()
-                            }));
-
-                            lastLockedServicesIds.forEach(id => {
-                                const serviceName = allServicesLabels.find(s => s.id === id)?.name || `Usługa ID ${id}`;
-                                breakdownHtml += `<li>${serviceName} (wliczone)</li>`;
-                            });
-                            breakdownHtml += `</ul>`;
-                        } else {
-                            breakdownHtml += `<p>Brak usług wliczonych w cenę sezonową.</p>`;
-                        }
-                        // Wyświetl sumę pozostałych usług, które użytkownik mógł zaznaczyć
-                        if (data.additional_services_subtotal_price > 0) {
-                            breakdownHtml += `<p>Inne usługi dodatkowe: ${data.additional_services_subtotal_price.toFixed(2)} PLN</p>`;
-                        } else {
-                            breakdownHtml += `<p>Inne usługi dodatkowe: 0.00 PLN</p>`;
-                        }
-
                     } else {
-                        // Standardowe wyświetlanie usług dodatkowych
-                        if (data.detailed_services_prices && data.detailed_services_prices.length > 0) {
-                            breakdownHtml += `<p>Usługi dodatkowe:</p>`;
-                            breakdownHtml += `<ul class="list-disc list-inside ml-4">`;
-                            data.detailed_services_prices.forEach(service => {
-                                breakdownHtml += `<li>${service.name}: ${service.price_per_night.toFixed(2)} PLN (łącznie: ${service.total_for_service.toFixed(2)} PLN)</li>`;
-                            });
-                            breakdownHtml += `</ul>`;
-                        } else {
-                            breakdownHtml += `<p>Usługi dodatkowe: 0.00 PLN</p>`;
-                        }
-                    }
-
-
-                    if (data.extra_guest_fee > 0) {
-                        breakdownHtml += `<p class="text-red-600">Opłata za dodatkowych gości (powyżej 6): ${data.extra_guest_fee.toFixed(2)} PLN</p>`;
-                    }
-
-                    priceBreakdownDisplay.innerHTML = breakdownHtml;
-
-                } else {
-                    totalPriceDisplay.textContent = 'Cena całkowita: Błąd!';
-                    priceBreakdownDisplay.innerHTML = `<p class="text-red-600">${data.error}</p>`;
-                    // W przypadku błędu, odblokuj wszystkie usługi
-                    additionalServiceItems.forEach(item => {
                         item.classList.remove('disabled-checkbox-item');
-                        const checkbox = item.querySelector('input[type="checkbox"]');
                         if (checkbox) {
                             checkbox.disabled = false;
                         }
-                    });
-                }
-            } catch (error) {
-                console.error('Błąd podczas pobierania ceny:', error);
-                totalPriceDisplay.textContent = 'Cena całkowita: Błąd połączenia!';
-                priceBreakdownDisplay.innerHTML = `<p class="text-red-600">Błąd połączenia z serwerem.</p>`;
-                // W przypadku błędu, odblokuj wszystkie usługi
-                additionalServiceItems.forEach(item => {
-                    item.classList.remove('disabled-checkbox-item');
-                    const checkbox = item.querySelector('input[type="checkbox"]');
-                    if (checkbox) {
-                        checkbox.disabled = false;
                     }
                 });
-            } finally {
-                loadingIndicator.classList.add('hidden');
-            }
-        }
 
-        // Dodaj nasłuchiwanie zdarzeń do wszystkich istotnych pól formularza
-        accommodationSelect.addEventListener('change', updatePrice);
-        startDateInput.addEventListener('change', updatePrice);
-        endDateInput.addEventListener('change', updatePrice);
-        adultsInput.addEventListener('input', updatePrice);
-        childrenInput.addEventListener('input', updatePrice);
-        additionalServicesCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updatePrice);
-        });
-
-        // Handle form submission to include locked services
-        form.addEventListener('submit', function(event) {
-            // Create hidden inputs for locked services so they are sent with the form
-            lastLockedServicesIds.forEach(serviceId => {
-                const existingHiddenInput = form.querySelector(`input[type="hidden"][name="additional_services"][value="${serviceId}"]`);
-                if (!existingHiddenInput) {
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'additional_services';
-                    hiddenInput.value = serviceId;
-                    form.appendChild(hiddenInput);
+                if (data.additional_services_subtotal_price > 0 || data.is_seasonal_services_locked) {
+                    breakdownHtml += `<li>Usługi dodatkowe: <strong>${data.additional_services_subtotal_price.toFixed(2)} PLN</strong></li>`;
                 }
-            });
-        });
+                
+                if (data.extra_guest_fee > 0) {
+                    breakdownHtml += `<li class="text-danger">Opłata za dodatkowych gości: <strong>${data.extra_guest_fee.toFixed(2)} PLN</strong></li>`;
+                }
+                breakdownHtml += `</ul>`;
+                priceBreakdownDisplay.innerHTML = breakdownHtml;
 
+            } else {
+                totalPriceDisplay.textContent = 'Błąd obliczania ceny';
+                priceBreakdownDisplay.innerHTML = `<p class="text-danger">${data.error || 'Wystąpił nieoczekiwany błąd.'}</p>`;
+            }
+        } catch (error) {
+            console.error('Błąd podczas pobierania ceny:', error);
+            totalPriceDisplay.textContent = 'Błąd połączenia';
+            priceBreakdownDisplay.innerHTML = `<p class="text-danger">Nie można połączyć się z serwerem.</p>`;
+        } finally {
+            loadingIndicator.classList.add('d-none');
+        }
+    }
+    
+    function debounceUpdatePrice() {
+        clearTimeout(requestDebounceTimer);
+        requestDebounceTimer = setTimeout(updatePrice, 300); // Czekaj 300ms przed wysłaniem zapytania
+    }
 
-        // Call price update function on page load
-        updatePrice();
+    [accommodationSelect, startDateInput, endDateInput, adultsInput, childrenInput].forEach(el => {
+        el.addEventListener('change', debounceUpdatePrice);
     });
+    adultsInput.addEventListener('input', debounceUpdatePrice);
+    childrenInput.addEventListener('input', debounceUpdatePrice);
+    additionalServicesCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', debounceUpdatePrice);
+    });
+
+    form.addEventListener('submit', function(event) {
+        // Przed wysłaniem formularza, upewnij się, że wyłączone checkbox'y są ponownie włączone,
+        // aby ich wartości zostały przesłane do widoku Django.
+        additionalServiceItems.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.disabled) {
+                checkbox.disabled = false;
+            }
+        });
+    });
+
+    // Initial price calculation on page load
+    updatePrice();
+});
 </script>
 {% endblock %}

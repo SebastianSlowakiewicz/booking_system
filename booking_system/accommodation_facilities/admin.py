@@ -119,4 +119,4 @@ class SeasonalPriceAdmin(admin.ModelAdmin):
     list_display = ("accommodation", "start_date", "end_date", "price_per_night")
     list_filter = ("accommodation", "start_date")
     search_fields = ("accommodation__name",)
-    filter_horizontal = ("included_services",) # Dodano included_services
+    filter_horizontal = ("included_services",) # Dodano included_servic

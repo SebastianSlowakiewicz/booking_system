@@ -285,4 +285,3 @@ def update_booking_total_price(sender, instance, action, **kwargs):
         instance.calculate_total_price()
         # Zapisz tylko zmienione pola, aby uniknąć rekurencji
         instance.save(update_fields=["total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee"])
-

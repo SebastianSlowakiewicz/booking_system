@@ -171,4 +171,3 @@ def calculate_booking_price_ajax(request):
     except Exception as e:
         print(f"Błąd w calculate_booking_price_ajax: {e}")
         return JsonResponse({'error': f'Wystąpił błąd serwera: {str(e)}'}, status=500)
-
