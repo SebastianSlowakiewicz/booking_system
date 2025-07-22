@@ -55,7 +55,6 @@ def booking_success(request, booking_id):
     return render(request, 'accommodation_facilities/booking_success.html.jinja', context)
 
 @require_POST
-# @csrf_exempt # TYLKO DO CELÓW ROZWOJOWYCH! W PRODUKCJI UŻYJ django.middleware.csrf.CsrfViewMiddleware i dodaj {% csrf_token %} do formularza AJAX
 def calculate_booking_price_ajax(request):
     """
     Oblicza cenę rezerwacji na podstawie danych przesłanych przez AJAX.
@@ -111,7 +110,7 @@ def calculate_booking_price_ajax(request):
                 'locked_services_ids': []
             })
 
-        # Sprawdź, czy dla wybranych dat obowiązuje cena sezonowa i jakie usługi są wliczone
+
         seasonal_prices_in_range = SeasonalPrice.objects.filter(
             accommodation=accommodation,
             start_date__lte=end_date,
@@ -127,16 +126,11 @@ def calculate_booking_price_ajax(request):
                         locked_services_ids.append(service.pk)
                     included_services_in_season.add(service.pk) # For pricing logic
 
-        # Obliczanie ceny zakwaterowania
         current_date = start_date
         while current_date < end_date:
             accommodation_price += accommodation.get_price_for_date(current_date)
             current_date += timedelta(days=1)
 
-        # Obliczanie ceny usług dodatkowych:
-        # Przetwarzaj tylko te usługi, które użytkownik zaznaczył (selected_services_ids)
-        # ORAZ które NIE są wliczone w cenę sezonową (included_services_in_season).
-        # To jest kluczowa zmiana, aby dopasować zachowanie do models.py.
         if selected_services_ids:
             additional_services_queryset = Aditional_service.objects.filter(pk__in=selected_services_ids)
             for service in additional_services_queryset:
@@ -171,3 +165,75 @@ def calculate_booking_price_ajax(request):
     except Exception as e:
         print(f"Błąd w calculate_booking_price_ajax: {e}")
         return JsonResponse({'error': f'Wystąpił błąd serwera: {str(e)}'}, status=500)
+    
+def offer_page_view(request):
+    """
+    View to display the accommodation offers and pricing information.
+    """
+    try:
+        main_accommodation_obj = Accommodation.objects.first() # Get the first accommodation object
+        seasonal_price_data = []
+        low_season_combined = {
+            'season_name': 'Sezon niski',
+            'dates': [],
+            'price_per_night': None, # This will be the price for the low season
+            'description': '',
+            'included_services': [],
+        }
+        low_season_price_set = False # Flag to ensure price is set only once for low season
+
+        if main_accommodation_obj:
+            # Order by start_date to make sure the combined low season dates are chronological
+            seasonal_prices = main_accommodation_obj.seasonal_prices.all().order_by('start_date')
+
+            for sp in seasonal_prices:
+                included_service_names = [service.aditional_service for service in sp.included_services.all()]
+
+                if "Sezon niski" in sp.season_name:
+                    low_season_combined['dates'].append({
+                        'start_date': sp.start_date,
+                        'end_date': sp.end_date
+                    })
+                    if not low_season_price_set:
+                        low_season_combined['price_per_night'] = sp.price_per_night
+                        low_season_combined['description'] = sp.description
+                        low_season_combined['included_services'] = included_service_names
+                        low_season_price_set = True
+                else:
+                    # Dodaj pozostałe sezony jako osobne wpisy
+                    seasonal_price_data.append({
+                        'season_name': sp.season_name,
+                        'start_date': sp.start_date,
+                        'end_date': sp.end_date,
+                        'price_per_night': sp.price_per_night,
+                        'description': sp.description,
+                        'included_services': included_service_names,
+                    })
+
+            # Dodaj połączony sezon niski na początek listy, jeśli istnieją daty
+            if low_season_combined['dates']:
+                seasonal_price_data.insert(0, low_season_combined) # Add at the beginning of the list
+
+            # Prepare main accommodation context
+            main_accommodation_context = {
+                'id': main_accommodation_obj.id,
+                'name': main_accommodation_obj.name,
+                'description': main_accommodation_obj.description,
+                'price_per_night': main_accommodation_obj.price_per_night,
+                'seasonal_prices': seasonal_price_data, # This now includes the combined low season
+            }
+        else:
+            main_accommodation_context = None
+
+    except Accommodation.DoesNotExist:
+        main_accommodation_context = None
+
+    additional_services = Aditional_service.objects.all().order_by('aditional_service')
+
+    context = {
+        'page_title': 'Nasz Cennik i Oferta',
+        'main_accommodation': main_accommodation_context,
+        'additional_services': additional_services,
+        'today': date.today(),
+    }
+    return render(request, 'accommodation_facilities/offer.html.jinja', context)

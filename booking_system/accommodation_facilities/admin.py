@@ -13,15 +13,12 @@ class SeasonalPriceInline(admin.TabularInline):
     model = SeasonalPrice
     extra = 1
     fields = ("start_date", "end_date", "price_per_night")
-    # NOWOŚĆ: Dodaj included_services do SeasonalPriceInline
-    # Użyj filter_horizontal dla ManyToManyField w inlines
     filter_horizontal = ("included_services",)
 
 
 class BookingInline(admin.TabularInline):
     model = Booking
     extra = 0
-    # NOWOŚĆ: Dodaj nowe pola do readonly_fields i fields
     readonly_fields = (
         "user", "start_date", "end_date", "created_at",
         "total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee", # Nowe pola
@@ -60,22 +57,20 @@ class AccommodationAdmin(admin.ModelAdmin):
 
 @admin.register(Amenity)
 class AmenityAdmin(admin.ModelAdmin):
-    list_display = ("amenity", "room_type") # Dodano room_type dla lepszej widoczności
+    list_display = ("amenity", "room_type") 
     search_fields = ("amenity", "room_type")
     list_filter = ("room_type",)
 
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    # NOWOŚĆ: Dodaj nowe pola do list_display
     list_display = (
         "accommodation", "start_date", "end_date",
-        "total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee", # Nowe pola
+        "total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee",
         "number_of_guests", "user", "created_at", "status"
     )
-    list_filter = ("start_date", "end_date", "accommodation", "status") # Dodano status do filtrów
+    list_filter = ("start_date", "end_date", "accommodation", "status")
     search_fields = ("accommodation__name", "user__username", "user__email")
-    # NOWOŚĆ: Dodaj nowe pola do fields/readonly_fields dla widoku edycji Booking
     fieldsets = (
         (None, {
             'fields': (
@@ -88,7 +83,7 @@ class BookingAdmin(admin.ModelAdmin):
                 'accommodation_subtotal_price', 'additional_services_subtotal_price',
                 'extra_guest_fee', 'total_price'
             ),
-            'classes': ('collapse',), # Opcjonalnie: zwijanie sekcji
+            'classes': ('collapse',),
         }),
         ('Usługi dodatkowe', {
             'fields': ('additional_services',),
@@ -103,7 +98,7 @@ class BookingAdmin(admin.ModelAdmin):
         "total_price", "accommodation_subtotal_price", "additional_services_subtotal_price",
         "extra_guest_fee", "created_at", "modified_at"
     )
-    filter_horizontal = ("additional_services",) # Użyj filter_horizontal dla ManyToManyField
+    filter_horizontal = ("additional_services",)
 
 
 @admin.register(Aditional_service)
@@ -112,11 +107,9 @@ class AditionalServiceAdmin(admin.ModelAdmin):
     search_fields = ("aditional_service",)
     list_filter = ("price",)
 
-# Rejestracja SeasonalPrice jako osobnego modelu w adminie (opcjonalne, jeśli nie jest inlinem)
-# Jeśli chcesz zarządzać cenami sezonowymi bezpośrednio, a nie tylko przez Accommodation Inline:
 @admin.register(SeasonalPrice)
 class SeasonalPriceAdmin(admin.ModelAdmin):
-    list_display = ("accommodation", "start_date", "end_date", "price_per_night")
+    list_display = ("season_name","accommodation", "start_date", "end_date", "price_per_night")
     list_filter = ("accommodation", "start_date")
     search_fields = ("accommodation__name",)
-    filter_horizontal = ("included_services",) # Dodano included_servic
+    filter_horizontal = ("included_services",)

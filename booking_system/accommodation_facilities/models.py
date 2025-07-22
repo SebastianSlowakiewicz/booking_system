@@ -37,17 +37,7 @@ class Status(models.Model):
         ("checked_in", "Zameldowane"),
         ("checked_out", "Wymeldowane"),
     ]
-    # Jeśli to jest tylko zbiór wyborów, a nie model do przechowywania instancji statusów,
-    # to możesz usunąć ten model i używać Status_CHOICES bezpośrednio w Booking.status.
-    # Jeśli ma to być model, potrzebuje pola do przechowywania statusu.
-    # Przykład:
-    # name = models.CharField(max_length=50, choices=Status_CHOICES, unique=True, verbose_name="Nazwa Statusu")
-    # def __str__(self):
-    #     return self.get_name_display()
-    # class Meta:
-    #     verbose_name = "Status"
-    #     verbose_name_plural = "Statusy"
-    pass # Pozostawiam pass, jeśli jest to tylko definicja choices
+  
 
 class Aditional_service(models.Model):
     aditional_service = models.CharField(max_length=50, verbose_name="Usługa dodatkowa")
@@ -129,17 +119,17 @@ class Address(models.Model):
         verbose_name_plural = "Adresy obiektów"
 
 class SeasonalPrice(models.Model):
-    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name="seasonal_prices", verbose_name="Zakwaterowanie")
+    season_name = models.CharField(max_length=100, verbose_name="Nazwa sezonu", help_text="Nazwa sezonu, np. 'Lato 2025'", blank=True)
+    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name="seasonal_prices", verbose_name="Zakwaterowanie", default="Janicka Chata")
     start_date = models.DateField(verbose_name="Data początkowa sezonu")
     end_date = models.DateField(verbose_name="Data końcowa sezonu")
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Cena za noc w sezonie", default=0.00)
-    # NOWE POLE: Usługi dodatkowe wliczone w cenę sezonową
     included_services = models.ManyToManyField(
         Aditional_service,
         blank=True,
         verbose_name="Usługi wliczone w cenę sezonową",
-        help_text="Usługi dodatkowe, które są wliczone w cenę zakwaterowania w tym sezonie i nie mogą być odznaczone."
-    )
+        help_text="Usługi dodatkowe, które są wliczone w cenę zakwaterowania w tym sezonie i nie mogą być odznaczone.")
+    description = models.TextField(blank=True, null=True, verbose_name="Opis sezonu")
 
     class Meta:
         ordering = ["start_date"]

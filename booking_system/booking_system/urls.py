@@ -12,5 +12,5 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('users/', include('users.urls')),
-    path('accommodation_facilities/', include('accommodation_facilities.urls')),
+    path('accommodation_facilities/', include('accommodation_facilities.urls'), name='accommodation_facilities'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

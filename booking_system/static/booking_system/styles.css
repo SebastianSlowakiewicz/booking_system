@@ -1015,4 +1015,42 @@ section {
     flex: 0 0 100%;
   }
 }
+.scroll-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.2s;
+    }
 
+    .scroll-btn:hover {
+        background-color: #f1f1f1;
+    }
+
+    .scroll-left {
+        left: 0;
+    }
+
+    .scroll-right {
+        right: 0;
+    }
+
+    /* Opcjonalnie, ukryj scrollbar */
+    .offer-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    .offer-slider {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;     /* Firefox */
+    }
