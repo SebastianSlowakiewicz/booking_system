@@ -237,3 +237,4 @@ def offer_page_view(request):
         'today': date.today(),
     }
     return render(request, 'accommodation_facilities/offer.html.jinja', context)
+
