@@ -130,6 +130,7 @@ class SeasonalPrice(models.Model):
         verbose_name="Usługi wliczone w cenę sezonową",
         help_text="Usługi dodatkowe, które są wliczone w cenę zakwaterowania w tym sezonie i nie mogą być odznaczone.")
     description = models.TextField(blank=True, null=True, verbose_name="Opis sezonu")
+    photo = models.ImageField(upload_to="seasonal_prices", verbose_name="Zdjęcie sezonu", blank=True, null=True)
 
     class Meta:
         ordering = ["start_date"]

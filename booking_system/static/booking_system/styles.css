@@ -98,12 +98,19 @@ font-style: normal;
 .h3 {
 color: #C68335;
 }
-section {
-height: 100vh; /* Pełna wysokość ekranu */
+.section {
+height: auto; /* Pełna wysokość ekranu */
 padding: 100px 20px;
 text-align: center;
-display: flexbox;
+display: flex;
 }
+.section-ver1 {
+  height: 100vh; /* Pełna wysokość ekranu */
+  padding: 100px 20px;
+  text-align: center;
+  display: flex;
+}
+
 
 #cytat {
 background: #fafafa;
@@ -133,17 +140,13 @@ margin-bottom: 10px;
 }
 
 #attractions {
-height: auto;
-background: rgb(255, 255, 255);
-color: #000000;
-font-family: "Aleo", serif;
-font-optical-sizing: auto;
-font-weight: 500;
-font-style: normal;
-font-size:xx-large;
-padding-bottom: 30px;
-align-items: center;
-
+  height: auto;
+  padding: 120px 20px;
+  text-align: center; /* To wyśrodkuje nagłówki i ikonę */
+  background: rgb(255, 255, 255);
+  color: #000000;
+  font-family: "Aleo", serif;
+  font-size: large; /* Zmieniono z xx-large dla lepszej czytelności */
 }
 
 #photos {
@@ -312,26 +315,23 @@ z-index: 15;
 color: #1e1e1e;
 }
 .map-container {
-position: relative;
-padding-bottom: 56.25%; /* 16:9 ratio */
-height: 0;
-overflow: hidden;
-max-width: 100%;
-flex: 1;
-align-items: center;
+  /* Używamy flexbox do wyśrodkowania mapy wewnątrz */
+  display: flex;
+  justify-content: center; /* Centrowanie w poziomie */
+  align-items: center;     /* Centrowanie w pionie */
+  width: 100%;
+  height: auto;
+  padding-top: 30px;
 }
 
+/* Poprawiony styl dla ramki z mapą */
 .map-container iframe {
-margin-top: 40px;
-position: absolute;
-left: 50%;                /* Ustawienie na środku */
-top: 30%;                 /* Ustawienie na środku */
-transform: translate(-50%, -50%); /* Przesunięcie do środka */
-width: 85%;
-height: 65%;
-border: 0;
-border-radius: 10px;
-box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  height: 65%; /* Ustawienie wysokości na 100% widoku */
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 16 / 9; /* Ustawienie proporcji 16:9 */
 }
 .attractions svg {
 margin-bottom: 10px;
@@ -865,55 +865,4 @@ font-size: 1.2rem;
   font-size: 1rem;
 }
 }
-
-    /* Custom styles for the offer section */
-    .offer-section {
-        padding: 60px 0;
-        background-color: #f8f9fa;
-    }
-
-    .season-card {
-        transition: transform .2s ease-in-out, box-shadow .2s ease-in-out;
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        display: flex; /* Add flexbox to the card itself */
-        flex-direction: column; /* Stack children vertically */
-    }
-
-    .season-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,.15);
-    }
-
-    .season-card .card-img-top {
-        height: 200px;
-        object-fit: cover;
-    }
-
-    .season-card .card-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        flex-grow: 1; /* Allow card-body to grow and fill space */
-    }
-
-    .price-tag {
-        font-size: 1.75rem;
-        font-weight: bold;
-        color: #343a40;
-    }
-
-    .price-tag .text-muted {
-        font-size: 1rem;
-        font-weight: 400;
-    }
-
-    .modal-header {
-        border-bottom: none;
-    }
-
-    .modal-footer {
-        border-top: none;
-    }
 

@@ -171,19 +171,19 @@ def offer_page_view(request):
     View to display the accommodation offers and pricing information.
     """
     try:
-        main_accommodation_obj = Accommodation.objects.first() # Get the first accommodation object
+        main_accommodation_obj = Accommodation.objects.first()
         seasonal_price_data = []
         low_season_combined = {
             'season_name': 'Sezon niski',
             'dates': [],
-            'price_per_night': None, # This will be the price for the low season
+            'price_per_night': None,
             'description': '',
             'included_services': [],
+            'photo': None, # Dodajemy pole na zdjęcie
         }
-        low_season_price_set = False # Flag to ensure price is set only once for low season
+        low_season_price_set = False
 
         if main_accommodation_obj:
-            # Order by start_date to make sure the combined low season dates are chronological
             seasonal_prices = main_accommodation_obj.seasonal_prices.all().order_by('start_date')
 
             for sp in seasonal_prices:
@@ -198,9 +198,10 @@ def offer_page_view(request):
                         low_season_combined['price_per_night'] = sp.price_per_night
                         low_season_combined['description'] = sp.description
                         low_season_combined['included_services'] = included_service_names
+                        # ZMIANA: Przypisujemy zdjęcie do połączonego sezonu
+                        low_season_combined['photo'] = sp.photo.url if sp.photo else None
                         low_season_price_set = True
                 else:
-                    # Dodaj pozostałe sezony jako osobne wpisy
                     seasonal_price_data.append({
                         'season_name': sp.season_name,
                         'start_date': sp.start_date,
@@ -208,33 +209,22 @@ def offer_page_view(request):
                         'price_per_night': sp.price_per_night,
                         'description': sp.description,
                         'included_services': included_service_names,
+                        'photo': sp.photo.url if sp.photo else None,
                     })
 
-            # Dodaj połączony sezon niski na początek listy, jeśli istnieją daty
             if low_season_combined['dates']:
-                seasonal_price_data.insert(0, low_season_combined) # Add at the beginning of the list
+                seasonal_price_data.insert(0, low_season_combined)
 
-            # Prepare main accommodation context
             main_accommodation_context = {
-                'id': main_accommodation_obj.id,
-                'name': main_accommodation_obj.name,
-                'description': main_accommodation_obj.description,
-                'price_per_night': main_accommodation_obj.price_per_night,
-                'seasonal_prices': seasonal_price_data, # This now includes the combined low season
+                'seasonal_prices': seasonal_price_data,
             }
         else:
             main_accommodation_context = None
 
     except Accommodation.DoesNotExist:
         main_accommodation_context = None
-
-    additional_services = Aditional_service.objects.all().order_by('aditional_service')
-
+    
     context = {
-        'page_title': 'Nasz Cennik i Oferta',
         'main_accommodation': main_accommodation_context,
-        'additional_services': additional_services,
-        'today': date.today(),
     }
     return render(request, 'accommodation_facilities/offer.html.jinja', context)
-
