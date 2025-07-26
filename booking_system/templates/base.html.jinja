@@ -5,15 +5,14 @@
     <meta charset="UTF-8">
     <title>{% block title %}Janicka Chata{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'booking_system/styles.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="{% static 'booking_system/styles.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Licorice&family=Markazi+Text:wght@400..700&family=New+Amsterdam&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/75d94097d5.js" crossorigin="anonymous"></script>
     <style>
-
         .frosted-glass {
             backdrop-filter: blur(8px); /* Adjust blur value as needed */
             -webkit-backdrop-filter: blur(8px); /* Safari support */
@@ -78,11 +77,151 @@
               .custom-carousel .carousel-caption {
                 z-index: 2;
               }
-              
-               
+
+              .toast-rich-offer {
+                background-color: #fff;
+                border-radius: 0.5rem; /* rounded-lg */
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+                border: none;
+                border-left: 5px solid #c68335;
+                width: 390px;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateX(25px);
+                transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, visibility 0.4s;
+            }
+            
+            .toast-rich-offer.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateX(0);
+            }
+            
+            /* Nagłówek */
+            .toast-rich-offer .toast-header {
+                background-color: transparent;
+                border-bottom: 1px solid #f0f0f0;
+                padding: 0.5rem 1rem;
+            }
+            
+            .toast-rich-offer .toast-header .fw-bold {
+                color: #c68335;
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            /* Główna treść powiadomienia */
+            .toast-rich-offer .toast-body {
+                padding: 1rem;
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            /* Kontener na zdjęcie */
+            .toast-rich-image-wrapper {
+                flex-shrink: 0;
+                width: 80px;
+                height: 80px;
+                border-radius: 0.375rem; /* rounded-md */
+                overflow: hidden;
+            }
+            
+            .toast-rich-image-wrapper img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            /* Kontener na tekst i szczegóły */
+            .toast-rich-content-wrapper {
+                flex-grow: 1;
+            }
+            
+            .toast-rich-content-wrapper .offer-title {
+                font-weight: 600;
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+                color: #111;
+            }
+            
+            .toast-rich-content-wrapper .offer-price {
+                font-weight: 700;
+                color: #c68335;
+                font-size: 1.2rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            /* Lista szczegółów oferty */
+            .offer-details-list {
+                list-style: none;
+                padding-left: 0;
+                margin-bottom: 1rem;
+                font-size: 0.85rem;
+                color: #4b5563;
+            }
+            
+            .offer-details-list li {
+                display: flex;
+                align-items: center;
+                margin-bottom: 0.4rem;
+            }
+            
+            .offer-details-list .bi {
+                color: #c68335;
+                margin-right: 0.5rem;
+                font-size: 1rem;
+            }
+            
+            /* Przycisk akcji */
+            .btn-offer-details {
+                background-color: #c68335;
+                border-color: #c68335;
+                color: #fff;
+                font-weight: 600;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+                width: 100%;
+                transition: background-color 0.2s ease, border-color 0.2s ease;
+            }
+            
+            .btn-offer-details:hover {
+                background-color: #a96d26;
+                border-color: #a96d26;
+                color: #fff;
+            }
+            
+            /* Pasek postępu */
+            .toast-progress-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background-color: rgba(198, 131, 53, 0.2);
+            }
+            
+            .toast-progress-bar-inner {
+                width: 100%;
+                height: 100%;
+                background-color: #c68335;
+                animation: shrink 8s linear forwards;
+                animation-play-state: running;
+            }
+            .toast-rich-offer:not(.show) {
+              display: block;
+            }
+            
+            @keyframes shrink {
+                from { width: 100%; }
+                to { width: 0%; }
+            }
+
     </style>
 </head>
 <body>
+  
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
             <div class="container-fluid">
@@ -170,7 +309,6 @@
               </button>
             
             </div>
-
     <main>
         {% block content %}
         <!-- Treść strony -->
@@ -306,5 +444,84 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
           </script>
+  {% if request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'offer' %}
+  {% if special_offers %}
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+    {% for offer in special_offers %}
+      <div class="toast toast-rich-offer" role="alert" aria-live="assertive" aria-atomic="true" id="specialOfferToast{{ forloop.counter }}">
+        <div class="toast-header">
+          <strong class="me-auto fw-bold"><i class="bi bi-stars me-2"></i>Oferta Specjalna</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          <div class="toast-rich-image-wrapper">
+              {% if offer.photo and offer.photo.url %}
+                  <img src="{{ offer.photo.url }}" alt="Zdjęcie oferty: {{ offer.season_name }}">
+              {% else %}
+                  <img src="https://placehold.co/120x120/c68335/FFFFFF?text={{ offer.season_name|slice:':1'|upper }}" alt="Brak zdjęcia dla: {{ offer.season_name }}">
+              {% endif %}
+          </div>
+          <div class="toast-rich-content-wrapper">
+              <h6 class="offer-title">{{ offer.season_name }}</h6>
+              <div class="offer-price">{{ offer.price_per_night }} zł <small class="text-muted fw-normal">/ doba</small></div>
+          </div>
+        </div>
+        <div class="toast-footer p-3 pt-0">
+           <ul class="offer-details-list">
+              <li><i class="bi bi-calendar-check"></i> <div><strong>Termin:</strong> {{ offer.start_date|date:"d.m" }} - {{ offer.end_date|date:"d.m.Y" }}</div></li>
+              {% if offer.included_services.all %}
+                  <li>
+                      <i class="bi bi-patch-check"></i>
+                      <div>
+                          <strong>W cenie:</strong>
+                          {{ offer.included_services.all|join:", " }}
+                      </div>
+                  </li>
+              {% endif %}
+          </ul>
+          <a href="{% url 'accommodation_facilities:offer' %}" class="btn btn-offer-details">
+              Zobacz szczegóły i rezerwuj
+          </a>
+        </div>
+        <div class="toast-progress-bar">
+          <div class="toast-progress-bar-inner"></div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const specialOfferToasts = document.querySelectorAll('.toast-rich-offer');
+      
+      specialOfferToasts.forEach((toastEl, index) => {
+        const toast = new bootstrap.Toast(toastEl, {
+          autohide: true,
+          delay: 8000 // 8 sekund
+        });
+
+        const progressBar = toastEl.querySelector('.toast-progress-bar-inner');
+
+        toastEl.addEventListener('mouseover', () => {
+          if (progressBar) progressBar.style.animationPlayState = 'paused';
+        });
+
+        toastEl.addEventListener('mouseout', () => {
+          if (progressBar) progressBar.style.animationPlayState = 'running';
+        });
+        
+        toastEl.addEventListener('hidden.bs.toast', () => {
+          if (progressBar) progressBar.style.animation = 'none';
+        });
+
+        setTimeout(() => {
+          if (progressBar) progressBar.style.animation = 'shrink 8s linear forwards';
+          toast.show();
+        }, 1000 * (index + 1));
+      });
+    });
+  </script>
+  {% endif %}
+  {% endif %}
         </body>
 </html>

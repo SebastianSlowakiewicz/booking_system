@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
-from datetime import datetime
+from datetime import datetime, date
+from accommodation_facilities.models import SeasonalPrice
 from django.contrib.auth.decorators import login_required
 
 

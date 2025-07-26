@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import date, timedelta
 import json
 from decimal import Decimal # Import Decimal for precise calculations
-
 from .forms import BookingForm
 from .models import Accommodation, Booking, Aditional_service, SeasonalPrice
 

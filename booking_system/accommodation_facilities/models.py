@@ -131,6 +131,7 @@ class SeasonalPrice(models.Model):
         help_text="Usługi dodatkowe, które są wliczone w cenę zakwaterowania w tym sezonie i nie mogą być odznaczone.")
     description = models.TextField(blank=True, null=True, verbose_name="Opis sezonu")
     photo = models.ImageField(upload_to="seasonal_prices", verbose_name="Zdjęcie sezonu", blank=True, null=True)
+    notification = models.BooleanField(default=False, verbose_name="Powiadomienie o ofercie specjalnej/last minute", help_text="Dodaj powiadomienie o ofercie specjalnej lub last minute, jeśli chcesz, aby ta cena sezonowa była promowana w serwisie.")
 
     class Meta:
         ordering = ["start_date"]

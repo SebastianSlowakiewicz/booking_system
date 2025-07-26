@@ -1,27 +1,42 @@
 {% extends "base.html.jinja" %}
 
 {% block title %}
-Strona Główna - Booking System
+Janicka Chata
 {% endblock %}
-
 {% block content %}
-    {% if user.is_authenticated %}
-        {# Zmieniono na użycie przestrzeni nazw 'accommodation_facilities:create_booking' #}
-        <a href="{% url 'accommodation_facilities:create_booking' %}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
-            <i class="fas fa-calendar-alt mr-2"></i> Zarezerwuj pobyt
-        </a>
-        {# Pamiętaj, aby 'user_profile' i 'login' były zdefiniowane w Twoich urls.py #}
-        <a href="{% url 'dashboard' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
-            <i class="fas fa-user mr-2"></i> Mój profil
-        </a>
-    {% else %}
-        <p class="text-gray-700">Zaloguj się, aby dokonać rezerwacji lub przeglądać swoje rezerwacje.</p>
-        <a href="{% url 'login' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
-            <i class="fas fa-sign-in-alt mr-2"></i> Zaloguj się
-        </a>
-    {% endif %}
+{% if special_offers.exists %}
+<div class="modal fade" id="specialOfferModal" tabindex="-1" aria-labelledby="specialOfferModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title" id="specialOfferModalLabel">Oferta specjalna!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          {% for offer in special_offers %}
+            <li>
+              <strong>{{ offer.accommodation.name }}</strong>: {{ offer.season_name|default:"Cena sezonowa" }}<br>
+              Od <strong>{{ offer.start_date }}</strong> do <strong>{{ offer.end_date }}</strong><br>
+              Cena za noc: <strong>{{ offer.price_per_night }} PLN</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var specialOfferModal = new bootstrap.Modal(document.getElementById('specialOfferModal'));
+    specialOfferModal.show();
+  });
+</script>
+{% endif %}
     <section class="ver1" id="cytat">
         <div class="title1"><h2>Komfort i relaks czekają na Ciebie!</h2></div>
         <h6>Zanurz się w górskim klimacie i wypocznij w przytulnym domku, blisko stoków i term.</h6> 
