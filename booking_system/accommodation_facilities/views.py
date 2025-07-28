@@ -227,3 +227,8 @@ def offer_page_view(request):
         'main_accommodation': main_accommodation_context,
     }
     return render(request, 'accommodation_facilities/offer.html.jinja', context)
+
+def gallery_view(request):
+    return render(request, 'accommodation_facilities/gallery.html.jinja',)
+def contact_view(request):
+    return render(request, 'accommodation_facilities/contact.html.jinja',)
