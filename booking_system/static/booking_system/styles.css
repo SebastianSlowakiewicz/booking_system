@@ -1,4 +1,4 @@
-/* === ROOT VARIABLES & GLOBAL STYLES === */
+
 :root {
   --custom-primary-color: #c68335;
   --custom-primary-hover-color: #a96d26;
@@ -43,7 +43,6 @@ html {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-
 /* === UTILITY & HELPER CLASSES === */
 .frosted-glass {
   backdrop-filter: blur(8px);
@@ -135,7 +134,37 @@ html {
   color: black;
   border-color: var(--custom-primary-color);
 }
+.scroll-down-btn {
+  color: white;
+  border: none; /* Usuwamy domyślną ramkę */
+  padding: 10px;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.3s ease, color 0.3s ease; /* Płynne przejście przy najechaniu */
+}
 
+.scroll-down-btn:hover {
+  color: #f0f0f0; /* Lekka zmiana koloru po najechaniu */
+  transform: scale(1.05); /* Delikatne powiększenie */
+  border: transparent;
+}
+
+/* Styl dla ikony wewnątrz przycisku */
+.scroll-down-btn .arrow {
+  font-size: 2rem; /* Możesz dostosować rozmiar strzałki */
+}
+
+/* Styl dla tekstu pod ikoną */
+.scroll-down-btn span {
+  font-size: 0.9rem;
+  margin-top: 5px; /* Odstęp między strzałką a tekstem */
+  font-weight: 300;
+  color:transparent;
+  transition: color 0.3s ease; /* Płynne przejście koloru tekstu */
+}
+.scroll-down-btn:hover span {
+  color: #f0f0f0; /* Zmiana koloru tekstu po najechaniu */
+}
 .btn-outline {
   color: rgb(0, 0, 0);
   transition: color 0.3s ease;
@@ -242,7 +271,10 @@ html {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("./19.jpg") no-repeat center center / cover;
+  background-image: var(--tlo-obrazu); 
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
   filter: brightness(0.4);
   z-index: 1;
 }
@@ -446,8 +478,9 @@ html {
   position: relative;
   overflow: hidden;
   padding: 60px 15px;
-  background: url('./3.jpg') no-repeat center center;
+  background-image: var(--tlo-opinii);
   background-size: cover;
+  background-position: center;
   height: auto;
   font-family: "Aleo", serif;
 }
@@ -757,10 +790,12 @@ html {
   padding: 150px 20px 50px 20px;
   height: auto;
   font-family: "Aleo", serif;
+  font-optical-sizing: auto;
 }
 
 .Offer h1 {
   margin-bottom: 1rem;
+  
 }
 
 .Offer h5 {
@@ -769,13 +804,16 @@ html {
 }
 
 .offer-card-wrapper {
+  position: relative; /* Konieczne dla nakładki z tekstem */
+  width: 100%;
+  aspect-ratio: 3 / 4; /* <-- KLUCZOWA ZMIANA! Ustawia stałe proporcje 3:4 (szerokość do wysokości) */
+  
+  /* Poniższe style zostają z Twojego oryginalnego kodu */
   overflow: hidden;
-  position: relative;
   border-radius: var(--bs-card-border-radius);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 500px; /* Zapewnia jednolitą wysokość dla wszystkich kart */
-  display: flex;
-  flex-direction: column;
+  font-family: "Aleo", serif;
+  font-optical-sizing: auto;
 }
 
 .offer-card-wrapper:hover,
@@ -818,6 +856,8 @@ html {
   transition: opacity 0.4s ease-in-out;
   z-index: 2;
   text-align: center;
+  font-family: "Aleo", serif;
+  font-optical-sizing: auto;
 }
 
 .card-hover-overlay {
@@ -855,6 +895,8 @@ html {
 
 .benefit-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Aleo", serif;
+  font-optical-sizing: auto;
 }
 
 .benefit-card:hover {
@@ -875,53 +917,90 @@ html {
 .additional-service-item.disabled-checkbox-item .form-check-input:disabled+.form-check-label {
   cursor: not-allowed;
 }
-
-/* Toast Notifications */
-.toast-rich-offer {
-  background-color: #fff;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: none;
-  border-left: 5px solid var(--custom-primary-color);
+ /* Główny kontener powiadomienia */
+ .toast.toast-rich-offer {
   width: 390px;
+  max-width: 100%;
+  background-color: #ffffff; /* Jasne tło */
+  color: #212529; /* Ciemny tekst */
+  border-radius: 12px;
+  border-left: 4px solid #c68335; /* Złoty akcent kolorystyczny */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   opacity: 0;
-  visibility: hidden;
   transform: translateX(25px);
-  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, visibility 0.4s;
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
 }
 
+/* Styl dla widocznego toasta (dodawany przez JS) */
 .toast-rich-offer.show {
   opacity: 1;
-  visibility: visible;
   transform: translateX(0);
 }
 
+.toast.toast-rich-offer {
+  width: 390px;
+  max-width: 100%;
+  background-color: #ffffff; /* Jasne tło */
+  color: #212529; /* Ciemny tekst */
+  border-radius: 12px;
+  border-left: 4px solid #c68335; /* Złoty akcent kolorystyczny */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(25px);
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+/* Styl dla widocznego toasta (dodawany przez JS) */
+.toast-rich-offer.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Nagłówek powiadomienia */
 .toast-rich-offer .toast-header {
-  background-color: transparent;
-  border-bottom: 1px solid #f0f0f0;
-  padding: 0.5rem 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 1.25rem;
+  color: #c68335;
 }
 
 .toast-rich-offer .toast-header .fw-bold {
-  color: var(--custom-primary-color);
   font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast-rich-offer .btn-close {
+  filter: none; 
+}
+
+.toast-rich-offer .toast-body,
+.toast-footer {
+  padding: 1.25rem;
+}
+.toast-footer {
+  padding-top: 0;
 }
 
 .toast-rich-offer .toast-body {
-  padding: 1rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
 }
 
+/* Kontener na zdjęcie */
 .toast-rich-image-wrapper {
   flex-shrink: 0;
   width: 80px;
   height: 80px;
-  border-radius: 0.375rem;
+  border-radius: 8px;
   overflow: hidden;
+  border: 2px solid #dee2e6;
 }
 
 .toast-rich-image-wrapper img {
@@ -930,6 +1009,7 @@ html {
   object-fit: cover;
 }
 
+/* Kontener na tekst i cenę */
 .toast-rich-content-wrapper {
   flex-grow: 1;
 }
@@ -937,54 +1017,72 @@ html {
 .toast-rich-content-wrapper .offer-title {
   font-weight: 600;
   font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: #111;
+  margin-bottom: 0.25rem;
+  color: #212529;
 }
 
 .toast-rich-content-wrapper .offer-price {
   font-weight: 700;
-  color: var(--custom-primary-color);
-  font-size: 1.2rem;
-  margin-bottom: 0.75rem;
+  color: #c68335;
+  font-size: 1.3rem;
 }
 
+.toast-rich-content-wrapper .offer-price small {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+/* Lista szczegółów oferty */
 .offer-details-list {
   list-style: none;
   padding-left: 0;
   margin-bottom: 1rem;
-  font-size: 0.85rem;
-  color: #4b5563;
+  font-size: 0.9rem;
+  color: #495057;
 }
 
 .offer-details-list li {
   display: flex;
-  align-items: center;
-  margin-bottom: 0.4rem;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
 }
 
 .offer-details-list .bi {
-  color: var(--custom-primary-color);
-  margin-right: 0.5rem;
-  font-size: 1rem;
+  color: #c68335;
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+  margin-top: 2px;
 }
 
+.offer-details-list strong {
+  color: #212529;
+  margin-right: 0.4rem;
+}
+
+/* --- ZAKTUALIZOWANY STYL PRZYCISKU --- */
 .btn-offer-details {
-  background-color: var(--custom-primary-color);
-  border-color: var(--custom-primary-color);
-  color: #fff;
-  font-weight: 600;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.9rem;
+  background-color: transparent;
+  border: 2px solid #c68335;
+  color: #c68335;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
   width: 100%;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  border-radius: 8px;
+  box-shadow: none;
+  /* Ulepszona animacja dla wszystkich właściwości */
+  transition: all 0.3s ease-in-out;
 }
 
 .btn-offer-details:hover {
-  background-color: var(--custom-primary-hover-color);
-  border-color: var(--custom-primary-hover-color);
-  color: #fff;
+  background: linear-gradient(45deg, #d9903d, #c68335);
+  color: #ffffff;
+  border-color: #c68335; /* Upewniamy się, że kolor ramki pasuje */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(198, 131, 53, 0.3);
 }
 
+/* Pasek postępu */
 .toast-progress-bar {
   position: absolute;
   bottom: 0;
@@ -997,9 +1095,15 @@ html {
 .toast-progress-bar-inner {
   width: 100%;
   height: 100%;
-  background-color: var(--custom-primary-color);
+  background-color: #c68335;
   animation: shrink 8s linear forwards;
   animation-play-state: running;
+  border-radius: 0 0 0 4px;
+}
+
+@keyframes shrink {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 /* Testimonials */

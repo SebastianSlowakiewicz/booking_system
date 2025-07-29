@@ -1,25 +1,88 @@
 {% extends "base.html.jinja" %}
 
-<div style="display: flex; flex-direction: row;">
-    {% block content %}
-    <div style="width: 100%; height:100%; padding: 20px; border-right: 1px solid #ccc;">
-        <h2>Witaj, {{ request.user.username }}!</h2>
-        <p>To jest Twój panel użytkownika.</p>
-        <p>Możesz tutaj zarządzać swoimi danymi, przeglądać historię wypożyczeń i wiele więcej.</p>
-        <p>Jeśli potrzebujesz pomocy, skontaktuj się z naszym zespołem wsparcia.</p>
-        <br>
-        <p>Twoje dane:</p>
-        <ul>
-            <li><strong>Nazwa użytkownika:</strong> {{ request.user.username }}</li>
-            <li><strong>Email:</strong> {{ request.user.email }}</li>
-            <li><strong>Data rejestracji:</strong> {{ request.user.date_joined|date:"Y-m-d H:i" }}</li>
-        </ul>
-        <br>
-        <p>Możesz również zmienić swoje hasło lub edytować profil.</p>
-        <br>
-        <p>Jeśli chcesz zmienić swoje dane, przejdź do sekcji <a href="">Edytuj profil</a>.</p>
-        <a href="{% url 'logout' %}" class="block py-2 px-3 text-gray-700 dark:text-gray-200 hover:text-[#C68335] dark:hover:text-[#C68335] rounded-md md:bg-transparent md:p-0 transition duration-300 ml-2">
+{% block title %}Panel Administratora{% endblock %}
+
+{% block slide_one_caption %}
+    <h2>Panel Administratora</h2>
+{% endblock %}
+{% block slide_two_caption %}<h2>Panel Administratora</h2>{% endblock %}
+{% block slide_three_caption %}<h2>Panel Administratora</h2>{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Witaj, {{ request.user.username }}!</h1>
+        <a href="{% url 'logout' %}" class="bg-[#C68335] text-white py-2 px-4 rounded-md hover:bg-opacity-80 transition duration-300">
             Wyloguj się
         </a>
     </div>
-    {% endblock %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Wszystkie rezerwacje</h3>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total_bookings }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Aktywne/Nadchodzące</h3>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.active_bookings_count }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Zarejestrowani użytkownicy</h3>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total_users }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Informacje o bieżącym sezonie</h2>
+        {% if current_season %}
+            <h3 class="text-xl font-semibold text-[#C68335]">{{ current_season.season_name }}</h3>
+            <p class="text-gray-600 dark:text-gray-300">Trwa od {{ current_season.start_date|date:"d.m.Y" }} do {{ current_season.end_date|date:"d.m.Y" }}</p>
+            <p class="text-lg font-bold mt-2">Cena za noc: {{ current_season.price_per_night }} PLN</p>
+            {% if current_season.included_services.all %}
+                <p class="mt-2 text-gray-700 dark:text-gray-300">Usługi w cenie:</p>
+                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
+                    {% for service in current_season.included_services.all %}
+                        <li>{{ service.aditional_service }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% else %}
+            <p class="text-gray-600 dark:text-gray-400">Obecnie nie trwa żaden zdefiniowany sezon. Obowiązuje cena standardowa.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Aktywne i nadchodzące rezerwacje</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white dark:bg-gray-800">
+                <thead class="bg-gray-200 dark:bg-gray-700">
+                    <tr>
+                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Użytkownik</th>
+                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Przyjazd</th>
+                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Wyjazd</th>
+                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Goście</th>
+                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Status</th>
+                        <th class="py-2 px-4 text-right text-gray-600 dark:text-gray-300">Cena całkowita</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in upcoming_bookings %}
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.user.username }}</td>
+                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.start_date|date:"d.m.Y" }}</td>
+                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.end_date|date:"d.m.Y" }}</td>
+                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.number_of_guests }}</td>
+                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ booking.get_status_display }}</span></td>
+                        <td class="py-2 px-4 text-right text-gray-800 dark:text-gray-200 font-bold">{{ booking.total_price }} PLN</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">Brak nadchodzących rezerwacji.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

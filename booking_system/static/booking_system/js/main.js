@@ -227,3 +227,43 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', updateScrollbar);
     updateScrollbar(); // Wywołanie początkowe
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Logika dla przycisku przewijającego w dół z karuzeli
+    const scrollDownButtons = document.querySelectorAll('.scroll-down-btn');
+    
+    scrollDownButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Znajdujemy element <header>, w którym jest karuzela
+            const headerElement = this.closest('header');
+            
+            if (headerElement) {
+                // Celem jest następny element po <header>, czyli <main>
+                const mainContent = headerElement.nextElementSibling;
+                
+                if (mainContent) {
+                    mainContent.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    });
+
+    // 2. Możesz tutaj zostawić lub dodać inne swoje skrypty, np. dla przycisku "do góry"
+    const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+    
+    if (scrollToTopBtn) {
+        window.onscroll = function() {
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                scrollToTopBtn.style.display = "block";
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        };
+
+        scrollToTopBtn.addEventListener("click", function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+});

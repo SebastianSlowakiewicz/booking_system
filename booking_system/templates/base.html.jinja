@@ -141,7 +141,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav nav-underline justify-content-lg-end w-100" style="list-style-type: none;">
+                <ul class="navbar-nav nav-underline justify-content-lg-end w-100" style="list-style-type: none;">
+                    
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'index' %}">O nas</a>
                     </li>
@@ -154,19 +155,35 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'accommodation_facilities:contact' %}">Kontakt</a>
                     </li>
-
+    
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="custom-button-2" href="{% url 'dashboard' %}">
-                            <i class="fas fa-user mr-2"></i> {{ user.username }}
-                        </a>
-                    </li>
+                        
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="custom-button-2" href="{% url 'admin_dashboard' %}">
+                                    <i class="fas fa-user-shield mr-2"></i> Panel Admina
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="custom-button-2" href="{% url 'dashboard' %}">
+                                    <i class="fas fa-user mr-2"></i> Moje Konto
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="nav-item">
+                            <a class="custom-button-2" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Wyloguj
+                            </a>
+                        </li>
+    
                     {% else %}
-                    <li class="nav-item">
-                        <a class="custom-button-2" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt mr-2"></i> Zaloguj się
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="custom-button-2" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt mr-2"></i> Zaloguj się
+                            </a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>
@@ -186,19 +203,38 @@
             <div class="carousel-item active" data-bs-interval="3500">
                 <img src="\media\1.jpeg" class="d-block w-100" alt="Slide 1">
                 <div class="carousel-caption">
-                    <p><a class="btn btn-outline" href="#cytat"><i class="fa-solid fa-arrow-down fa-beat arrow"></i></a></p>
+                    {% block slide_one_caption %}{% endblock %}
+                    
+            <a class="btn btn-outline scroll-down-btn" href="#">
+                <div class="d-flex flex-column align-items-center">
+                    <i class="fa-solid fa-arrow-down fa-beat arrow"></i>
+                    <span>Zobacz więcej!</span>
+                </div>
+            </a>
                 </div>
             </div>
             <div class="carousel-item" data-bs-interval="2000">
                 <img src="\media\2.jpeg" class="d-block w-100" alt="Slide 2">
                 <div class="carousel-caption">
-                    <p><a class="btn btn-outline" href="#cytat"><i class="fa-solid fa-arrow-down fa-beat arrow"></i></a></p>
+                    {% block slide_two_caption %}{% endblock %}
+                    <a class="btn btn-outline scroll-down-btn" href="#">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fa-solid fa-arrow-down fa-beat arrow"></i>
+                            <span>Zobacz więcej!</span>
+                        </div>
+                    </a>
                 </div>
             </div>
             <div class="carousel-item" data-bs-interval="2000">
                 <img src="\media\3.jpg" class="d-block w-100" alt="Slide 3">
                 <div class="carousel-caption">
-                    <p><a class="btn btn-outline" href="#cytat"><i class="fa-solid fa-arrow-down fa-beat arrow"></i></a></p>
+                    {% block slide_three_caption %}{% endblock %}
+                    <a class="btn btn-outline scroll-down-btn" href="#">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fa-solid fa-arrow-down fa-beat arrow"></i>
+                            <span>Zobacz więcej!</span>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,137 @@
+{% extends "base.html.jinja" %}
+
+{% block title %}Panel Administratora{% endblock %}
+{% block slide_one_caption %}
+    <h2>Panel Administratora</h2>
+{% endblock %}
+{% block slide_two_caption %}<h2>Panel Administratora</h2>{% endblock %}
+{% block slide_three_caption %}<h2>Panel Administratora</h2>{% endblock %}
+{% block content %}
+<style>
+    /* Niestandardowe style dla lepszego wyglądu */
+    .icon-circle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        color: #fff;
+    }
+    .card-accent {
+        border-left: 4px solid;
+    }
+    .border-left-primary { border-color: var(--bs-primary); }
+    .border-left-success { border-color: var(--bs-success); }
+    .border-left-warning { border-color: var(--bs-warning); }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <span class="d-none d-sm-inline me-3">Witaj, <strong>{{ request.user.username }}!</strong></span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4 card-accent border-left-primary">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-primary me-3"><i class="fas fa-calendar-check fa-lg"></i></div>
+                    <div>
+                        <h6 class="card-subtitle text-muted">Wszystkie Rezerwacje</h6>
+                        <span class="h4 font-weight-bold mb-0">{{ stats.total_bookings }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-4 card-accent border-left-success">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-success me-3"><i class="fas fa-clock fa-lg"></i></div>
+                    <div>
+                        <h6 class="card-subtitle text-muted">Aktywne i Nadchodzące</h6>
+                        <span class="h4 font-weight-bold mb-0">{{ stats.active_bookings_count }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-4 card-accent border-left-warning">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-circle bg-warning me-3"><i class="fas fa-users fa-lg"></i></div>
+                    <div>
+                        <h6 class="card-subtitle text-muted">Zarejestrowani Użytkownicy</h6>
+                        <span class="h4 font-weight-bold mb-0">{{ stats.total_users }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Aktywne Sezony</h5>
+                </div>
+                {% if active_seasons %}
+                    <ul class="list-group list-group-flush">
+                    {% for season in active_seasons %}
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ season.season_name }}</h6>
+                                <strong class="text-success">{{ season.price_per_night }} PLN</strong>
+                            </div>
+                            <p class="mb-1 text-muted">{{ season.accommodation.name }}</p>
+                            {% if season.included_services.all %}
+                                <div>{% for service in season.included_services.all %}<span class="badge rounded-pill bg-info text-dark me-1">{{ service.aditional_service }}</span>{% endfor %}</div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="card-body">
+                        <p class="text-muted mb-0">Brak aktywnych sezonów.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Rezerwacje Aktywne i Nadchodzące</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Użytkownik</th>
+                                <th scope="col">Termin</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-end">Cena</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in upcoming_bookings %}
+                                {% if booking.start_date <= today and booking.end_date >= today %}
+                                    <tr class="table-success align-middle">
+                                        <td><strong>{{ booking.user.username }}</strong></td>
+                                        <td><strong>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</strong></td>
+                                        <td><span class="badge rounded-pill bg-success">Trwa</span></td>
+                                        <td class="text-end"><strong>{{ booking.total_price }} PLN</strong></td>
+                                    </tr>
+                                {% else %}
+                                    <tr class="align-middle">
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</td>
+                                        <td><span class="badge rounded-pill bg-secondary">{{ booking.get_status_display }}</span></td>
+                                        <td class="text-end">{{ booking.total_price }} PLN</td>
+                                    </tr>
+                                {% endif %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center p-5 text-muted">Brak rezerwacji do wyświetlenia.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

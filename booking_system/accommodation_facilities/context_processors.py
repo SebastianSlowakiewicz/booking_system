@@ -1,14 +1,13 @@
-from .models import Accommodation
+from .models import SeasonalPrice
+from django.utils import timezone
 
 def special_offers_processor(request):
-    special_offers_list = []
-    try:
-        main_accommodation_obj = Accommodation.objects.first()
-        if main_accommodation_obj:
-            special_offers_list = list(
-                main_accommodation_obj.seasonal_prices.filter(notification=True).prefetch_related('included_services')
-            )
-    except Accommodation.DoesNotExist:
-        pass
 
-    return {'special_offers': special_offers_list}
+    today = timezone.now().date()
+    
+    special_offers = SeasonalPrice.objects.filter(
+        notification=True,
+        end_date__gte=today
+    ).select_related('accommodation')
+
+    return {'special_offers': special_offers}
