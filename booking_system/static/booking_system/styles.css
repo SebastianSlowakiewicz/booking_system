@@ -930,6 +930,7 @@ html {
   opacity: 0;
   transform: translateX(25px);
   transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  font-family: 'Aleo',serif ;
 }
 
 /* Styl dla widocznego toasta (dodawany przez JS) */
@@ -950,6 +951,7 @@ html {
   opacity: 0;
   transform: translateX(25px);
   transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+  transition: color 0.3s ease;
 }
 
 /* Styl dla widocznego toasta (dodawany przez JS) */
@@ -1070,6 +1072,7 @@ html {
   width: 100%;
   border-radius: 8px;
   box-shadow: none;
+  transition: color 0.3s ease;
   /* Ulepszona animacja dla wszystkich właściwości */
   transition: all 0.3s ease-in-out;
 }
@@ -1079,6 +1082,7 @@ html {
   color: #ffffff;
   border-color: #c68335; /* Upewniamy się, że kolor ramki pasuje */
   transform: translateY(-2px);
+  transition: color 0.3s ease;
   box-shadow: 0 6px 20px rgba(198, 131, 53, 0.3);
 }
 
