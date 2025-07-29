@@ -75,6 +75,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'accommodation_facilities.context_processors.special_offers_processor',
+                'booking_system.context_processors.global_context', 
             ],
         },
     },
