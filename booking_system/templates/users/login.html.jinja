@@ -1,32 +1,98 @@
 {% extends "base.html.jinja" %}
+{% load static %}
+
+{% block title %}Logowanie - {{ block.super }}{% endblock %}
+
+{% block slide_one_caption %}
+{% block slide_two_caption %}
+{% block slide_three_caption %}
+<style>
+    /* Main container for the login widget */
+    .login-widget-container {
+        max-width: 420px; /* Zmniejszono szerokość */
+        width: 100%;
+        margin: 0 auto; /* Center the widget horizontally */
+        margin-top: 15vh; /* Obniżenie widgetu od góry */
+        padding: 20px; /* Zmniejszono wewnętrzny odstęp */
+        border-radius: 10px;
+        color: white; 
+    }
+
+    /* Style for form labels */
+    .form-label {
+        color: white;
+        font-weight: 500;
+    }
+    
+    /* Custom style for form inputs to make them transparent */
+    .form-control-trans {
+        background-color: rgba(0, 0, 0, 0.25); /* Darker, semi-transparent background */
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+    }
+
+    .form-control-trans::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .form-control-trans:focus {
+        background-color: rgba(0, 0, 0, 0.4);
+        border-color: white;
+        color: white;
+        box-shadow: none; /* Remove default focus glow */
+    }
+
+    /* Styling for links within the widget */
+    .login-widget-container a {
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    .login-widget-container a:hover {
+        text-decoration: underline;
+    }
+
+</style>
+
+<div class="login-widget-container frosted-glass">
+    <h2 class="title1 text-center mb-4">Logowanie</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="usernameInput" class="form-label">Nazwa użytkownika</label>
+            <input type="text" class="form-control form-control-trans" id="usernameInput" name="username" required>
+        </div>
+        <div class="mb-4">
+             <label for="passwordInput" class="form-label">Hasło</label>
+            <input type="password" class="form-control form-control-trans" id="passwordInput" name="password" required>
+        </div>
+
+        <div class="d-grid gap-2 mb-3">
+            <button type="submit" class="custom-button">Zaloguj się</button>
+        </div>
+
+        <div class="text-center">
+            <a href="{% url 'password_reset' %}">Nie pamiętam hasła</a>
+        </div>
+    </form>
+
+    <hr class="my-4" style="border-color: #c68335;">
+
+    <p class="text-center mb-0">Nie masz konta? <a href="{% url 'register' %}">Zarejestruj się!</a></p>
+</div>
+{% endblock %}
+{% endblock %}
+{% endblock %}
+
 {% block content %}
-<h2>Logowanie</h2>
-<br>
-{% if messages %}
-    {% for message in messages %}
-        <p class="alert alert-danger" style="max-width: 400px;" role="alert">{{ message }}</p>
-    {% endfor %}
-{% endif %}
-<form method="post">
-    {% csrf_token %}
-    <div class="form-floating mb-3" style="max-width: 400px;">
-        <input type="username" class="form-control" id="floatingInput" placeholder="Nazwa123" name="username" required>
-        <label for="floatingInput">Nazwa użytkownika:</label>
-      </div>
-    <div class="form-floating" style="max-width: 400px;">
-        <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password"
-        required>
-        <label for="floatingPassword">Hasło:</label>
-      </div>
-    <br>
-    <div style="display: flex; align-items: center; gap: 10px; max-width: 400px;">
-        <button type="submit" class="btn btn-outline-success">Zaloguj</button>
-        <div style="border-left: 1px solid #ccc; height: 24px;"></div>
-        <p style="margin: 0;"><a href="{% url 'password_reset' %}" style="color: green; text-decoration: none;">Nie pamiętam hasła</a></p>
-    </div>
-</form>
-
-<br>
-
-<p style="margin: 0;">Nie masz konta?<a href="{% url 'register' %}" style="color: green; text-decoration: none;"> Zarejestruj się!</a></p>
+{# This block is intentionally left empty so that no other content is displayed on the page #}
 {% endblock %}

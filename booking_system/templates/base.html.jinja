@@ -268,10 +268,10 @@
             <div class="col-md-4">
               <h5>Mapa strony</h5>
               <ul class="list-unstyled">
-                <li><a href="./index.html">O nas</a></li>
-                <li><a href="./Offer.html">Oferta</a></li>
-                <li><a href="./Gallery.html">Galeria zdjęć</a></li>
-                <li><a href="./contact.html">Kontakt</a></li>
+                <li><a href="{% url 'index' %}">O nas</a></li>
+                <li><a href="{% url 'accommodation_facilities:offer' %}">Oferta</a></li>
+                <li><a href="{% url 'accommodation_facilities:gallery' %}">Galeria zdjęć</a></li>
+                <li><a href="{% url 'accommodation_facilities:contact' %}">Kontakt</a></li>
               </ul>
             </div>
             <div class="col-md-4">

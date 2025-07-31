@@ -1,0 +1,93 @@
+{% extends "base.html.jinja" %}
+
+{% block title %}Szczegóły rezerwacji #{{ booking.id }} - {{ block.super }}{% endblock %}
+{% block slide_one_caption %}<h2>Szczegóły rezerwacji</h2>{% endblock %}
+{% block slide_two_caption %}<h2>Szczegóły rezerwacji</h2>{% endblock %}
+{% block slide_three_caption %}<h2>Szczegóły rezerwacji</h2>{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="title1">Rezerwacja #{{ booking.id }}</h1>
+        
+        {# --- POPRAWIONY PRZYCISK POWROTU --- #}
+        <a href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Powrót do panelu
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header" style="background-color: var(--custom-primary-color); color: white;">
+                    <h5 class="mb-0">Podsumowanie</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Użytkownik</h6>
+                            <p>{{ booking.user.username }} ({{ booking.user.email }})</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Termin</h6>
+                            <p>{{ booking.start_date|date:"d.m.Y" }} - {{ booking.end_date|date:"d.m.Y" }}</p>
+                        </div>
+                    </div>
+                     <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Liczba gości</h6>
+                            <p>Dorośli: {{ booking.number_of_adults }}, Dzieci: {{ booking.number_of_children }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Status</h6>
+                            <p><span class="badge bg-success fs-6">{{ booking.get_status_display }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Szczegóły płatności</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Cena za nocleg:</span>
+                        <strong>{{ booking.accommodation_subtotal_price|default:"0.00" }} PLN</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Usługi dodatkowe:</span>
+                        <strong>{{ booking.additional_services_subtotal_price|default:"0.00" }} PLN</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Dopłata za gości:</span>
+                        <strong>{{ booking.extra_guest_fee|default:"0.00" }} PLN</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between bg-light">
+                        <span class="fw-bold">Cena całkowita:</span>
+                        <strong class="h5 mb-0" style="color: var(--custom-primary-color);">{{ booking.total_price|default:"0.00" }} PLN</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Wybrane usługi dodatkowe</h5>
+        </div>
+        <div class="card-body">
+            {% if booking.additional_services.all %}
+                <ul class="list-unstyled">
+                {% for service in booking.additional_services.all %}
+                    <li><i class="fas fa-check-circle text-success me-2"></i>{{ service.aditional_service }} ({{ service.price }} PLN)</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">Nie wybrano żadnych usług dodatkowych.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

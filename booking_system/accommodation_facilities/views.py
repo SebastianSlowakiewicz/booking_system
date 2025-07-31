@@ -232,3 +232,24 @@ def gallery_view(request):
     return render(request, 'accommodation_facilities/gallery.html.jinja',)
 def contact_view(request):
     return render(request, 'accommodation_facilities/contact.html.jinja',)
+
+@login_required
+def booking_detail(request, booking_id):
+    """
+    Widok wyświetlający szczegóły rezerwacji dla jej właściciela lub admina.
+    """
+    booking = get_object_or_404(
+        Booking.objects.select_related('user', 'accommodation'),
+        pk=booking_id
+    )
+
+    # KLUCZOWE ZABEZPIECZENIE: Sprawdź, czy użytkownik jest właścicielem rezerwacji LUB adminem
+    if booking.user != request.user and not request.user.is_staff:
+        # Jeśli nie, rzuć błąd 404 (ukrywamy fakt, że rezerwacja istnieje)
+        return render(request, '404.html.jinja', status=404)
+
+    context = {
+        'booking': booking
+    }
+    
+    return render(request, "accommodation_facilities/booking_detail.html.jinja", context)

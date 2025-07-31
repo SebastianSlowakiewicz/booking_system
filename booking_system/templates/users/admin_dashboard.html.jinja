@@ -1,135 +1,184 @@
+
 {% extends "base.html.jinja" %}
 
-{% block title %}Panel Administratora{% endblock %}
-{% block slide_one_caption %}
-    <h2>Panel Administratora</h2>
-{% endblock %}
+{% block title %}Panel Administratora - {{ block.super }}{% endblock %}
+
+{% block slide_one_caption %}<h2>Panel Administratora</h2>{% endblock %}
 {% block slide_two_caption %}<h2>Panel Administratora</h2>{% endblock %}
 {% block slide_three_caption %}<h2>Panel Administratora</h2>{% endblock %}
-{% block content %}
-<style>
-    /* Niestandardowe style dla lepszego wyglądu */
-    .icon-circle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        color: #fff;
-    }
-    .card-accent {
-        border-left: 4px solid;
-    }
-    .border-left-primary { border-color: var(--bs-primary); }
-    .border-left-success { border-color: var(--bs-success); }
-    .border-left-warning { border-color: var(--bs-warning); }
-</style>
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center">
-            <span class="d-none d-sm-inline me-3">Witaj, <strong>{{ request.user.username }}!</strong></span>
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <span class="d-none d-md-inline">Witaj, <strong>{{ request.user.username }}</strong>!</span>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-start border-5" style="border-color: var(--custom-primary-color) !important;">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle text-muted mb-2">Wszystkie Rezerwacje</h6>
+                    <p class="h2 font-weight-bold mb-0">{{ stats.total_bookings }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-start border-5 border-success">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle text-muted mb-2">Aktywne i Nadchodzące</h6>
+                    <p class="h2 font-weight-bold mb-0">{{ stats.active_bookings_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 border-start border-5 border-info">
+                <div class="card-body text-center">
+                    <h6 class="card-subtitle text-muted mb-2">Zarejestrowani Użytkownicy</h6>
+                    <p class="h2 font-weight-bold mb-0">{{ stats.total_users }}</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-4 card-accent border-left-primary">
-                <div class="card-body d-flex align-items-center">
-                    <div class="icon-circle bg-primary me-3"><i class="fas fa-calendar-check fa-lg"></i></div>
-                    <div>
-                        <h6 class="card-subtitle text-muted">Wszystkie Rezerwacje</h6>
-                        <span class="h4 font-weight-bold mb-0">{{ stats.total_bookings }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card shadow-sm mb-4 card-accent border-left-success">
-                <div class="card-body d-flex align-items-center">
-                    <div class="icon-circle bg-success me-3"><i class="fas fa-clock fa-lg"></i></div>
-                    <div>
-                        <h6 class="card-subtitle text-muted">Aktywne i Nadchodzące</h6>
-                        <span class="h4 font-weight-bold mb-0">{{ stats.active_bookings_count }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card shadow-sm mb-4 card-accent border-left-warning">
-                <div class="card-body d-flex align-items-center">
-                    <div class="icon-circle bg-warning me-3"><i class="fas fa-users fa-lg"></i></div>
-                    <div>
-                        <h6 class="card-subtitle text-muted">Zarejestrowani Użytkownicy</h6>
-                        <span class="h4 font-weight-bold mb-0">{{ stats.total_users }}</span>
-                    </div>
-                </div>
-            </div>
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <h3 class="h4 mb-3">Zarządzanie rezerwacjami</h3>
+            <ul class="nav nav-tabs" id="bookingTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">Aktywne</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Nadchodzące</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab">Przeszłe</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">Wszystkie</button>
+                </li>
+            </ul>
 
+            <div class="tab-content" id="bookingTabsContent">
+                <div class="tab-pane fade show active" id="active" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead><tr><th>Użytkownik</th><th>Termin</th><th>Status</th><th class="text-end">Cena</th></tr></thead>
+                            <tbody>
+                                {% for booking in active_bookings %}
+                                    <tr>
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</td>
+                                        <td>
+                                            {% if booking.start_date == today %}<span class="badge bg-success">Przyjazd dzisiaj</span>
+                                            {% elif booking.end_date == today %}<span class="badge bg-warning text-dark">Wyjazd dzisiaj</span>
+                                            {% else %}<span class="badge bg-primary">Obecna</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end fw-bold">{{ booking.total_price }} PLN</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center p-4 text-muted">Brak aktywnych rezerwacji.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="upcoming" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                           <thead><tr><th>Użytkownik</th><th>Termin</th><th>Status</th><th class="text-end">Cena</th></tr></thead>
+                            <tbody>
+                                {% for booking in upcoming_bookings %}
+                                    <tr>
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</td>
+                                        <td><span class="badge" style="background-color: var(--custom-primary-hover-color);">{{ booking.get_status_display }}</span></td>
+                                        <td class="text-end fw-bold">{{ booking.total_price }} PLN</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center p-4 text-muted">Brak nadchodzących rezerwacji.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="past" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                           <thead><tr><th>Użytkownik</th><th>Termin</th><th>Status</th><th class="text-end">Cena</th></tr></thead>
+                           <tbody>
+                                {% for booking in past_bookings %}
+                                    <tr>
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</td>
+                                        <td><span class="badge bg-secondary">{{ booking.get_status_display }}</span></td>
+                                        <td class="text-end fw-bold">{{ booking.total_price }} PLN</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center p-4 text-muted">Brak przeszłych rezerwacji.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="all" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                           <thead><tr><th>Użytkownik</th><th>Termin</th><th>Status</th><th class="text-end">Cena</th></tr></thead>
+                           <tbody>
+                                {% for booking in all_bookings %}
+                                    <tr>
+                                        <td>{{ booking.user.username }}</td>
+                                        <td>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</td>
+                                        <td>
+                                            {% if booking.start_date == today %}<span class="badge bg-success">Przyjazd dzisiaj</span>
+                                            {% elif booking.end_date == today %}<span class="badge bg-warning text-dark">Wyjazd dzisiaj</span>
+                                            {% elif booking.start_date < today and booking.end_date > today %}<span class="badge bg-primary">Obecna</span>
+                                            {% else %}<span class="badge bg-secondary">{{ booking.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end fw-bold">{{ booking.total_price }} PLN</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center p-4 text-muted">Brak jakichkolwiek rezerwacji.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <h3 class="h4 mb-3">Informacje o sezonach</h3>
             <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header" style="background-color: var(--custom-primary-color); color: white;">
                     <h5 class="mb-0"><i class="fas fa-star me-2"></i>Aktywne Sezony</h5>
                 </div>
                 {% if active_seasons %}
                     <ul class="list-group list-group-flush">
-                    {% for season in active_seasons %}
-                        <li class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between">
+                        {% for season in active_seasons %}
+                            <li class="list-group-item">
                                 <h6 class="mb-1">{{ season.season_name }}</h6>
-                                <strong class="text-success">{{ season.price_per_night }} PLN</strong>
-                            </div>
-                            <p class="mb-1 text-muted">{{ season.accommodation.name }}</p>
-                            {% if season.included_services.all %}
-                                <div>{% for service in season.included_services.all %}<span class="badge rounded-pill bg-info text-dark me-1">{{ service.aditional_service }}</span>{% endfor %}</div>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
+                                <p class="mb-1 text-muted">Cena: <strong class="text-dark">{{ season.price_per_night }} PLN</strong> / noc</p>
+                                {% if season.included_services.all %}
+                                    <div>
+                                        {% for service in season.included_services.all %}
+                                            <span class="badge rounded-pill" style="background-color: #e9ecef; color: #343a40;">{{ service.aditional_service }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
                     </ul>
                 {% else %}
                     <div class="card-body">
                         <p class="text-muted mb-0">Brak aktywnych sezonów.</p>
                     </div>
                 {% endif %}
-            </div>
-        </div>
-
-        <div class="col-lg-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Rezerwacje Aktywne i Nadchodzące</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Użytkownik</th>
-                                <th scope="col">Termin</th>
-                                <th scope="col">Status</th>
-                                <th scope="col" class="text-end">Cena</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for booking in upcoming_bookings %}
-                                {% if booking.start_date <= today and booking.end_date >= today %}
-                                    <tr class="table-success align-middle">
-                                        <td><strong>{{ booking.user.username }}</strong></td>
-                                        <td><strong>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</strong></td>
-                                        <td><span class="badge rounded-pill bg-success">Trwa</span></td>
-                                        <td class="text-end"><strong>{{ booking.total_price }} PLN</strong></td>
-                                    </tr>
-                                {% else %}
-                                    <tr class="align-middle">
-                                        <td>{{ booking.user.username }}</td>
-                                        <td>{{ booking.start_date|date:"d.m" }} - {{ booking.end_date|date:"d.m.Y" }}</td>
-                                        <td><span class="badge rounded-pill bg-secondary">{{ booking.get_status_display }}</span></td>
-                                        <td class="text-end">{{ booking.total_price }} PLN</td>
-                                    </tr>
-                                {% endif %}
-                            {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center p-5 text-muted">Brak rezerwacji do wyświetlenia.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>

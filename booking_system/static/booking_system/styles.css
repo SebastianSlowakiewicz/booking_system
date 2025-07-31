@@ -937,6 +937,7 @@ html {
 .toast-rich-offer.show {
   opacity: 1;
   transform: translateX(0);
+  transition: all 0.4s ease-in-out;
 }
 
 .toast.toast-rich-offer {
@@ -952,12 +953,6 @@ html {
   transform: translateX(25px);
   transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
   transition: color 0.3s ease;
-}
-
-/* Styl dla widocznego toasta (dodawany przez JS) */
-.toast-rich-offer.show {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 /* Nagłówek powiadomienia */
@@ -1073,8 +1068,7 @@ html {
   border-radius: 8px;
   box-shadow: none;
   transition: color 0.3s ease;
-  /* Ulepszona animacja dla wszystkich właściwości */
-  transition: all 0.3s ease-in-out;
+   transition: all 0.3s ease-in-out;
 }
 
 .btn-offer-details:hover {
@@ -1084,6 +1078,7 @@ html {
   transform: translateY(-2px);
   transition: color 0.3s ease;
   box-shadow: 0 6px 20px rgba(198, 131, 53, 0.3);
+  transition: all 0.3s ease-in-out;
 }
 
 /* Pasek postępu */

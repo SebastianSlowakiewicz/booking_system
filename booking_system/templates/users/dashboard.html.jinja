@@ -1,87 +1,101 @@
 {% extends "base.html.jinja" %}
 
-{% block title %}Panel Administratora{% endblock %}
-
-{% block slide_one_caption %}
-    <h2>Panel Administratora</h2>
-{% endblock %}
-{% block slide_two_caption %}<h2>Panel Administratora</h2>{% endblock %}
-{% block slide_three_caption %}<h2>Panel Administratora</h2>{% endblock %}
+{% block title %}Moje Konto - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Witaj, {{ request.user.username }}!</h1>
-        <a href="{% url 'logout' %}" class="bg-[#C68335] text-white py-2 px-4 rounded-md hover:bg-opacity-80 transition duration-300">
-            Wyloguj się
+<div class="container mt-5 mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="title1">Witaj, {{ request.user.username }}!</h1>
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+            <i class="fas fa-sign-out-alt me-2"></i> Wyloguj się
         </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Wszystkie rezerwacje</h3>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total_bookings }}</p>
-        </div>
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Aktywne/Nadchodzące</h3>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.active_bookings_count }}</p>
-        </div>
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-300">Zarejestrowani użytkownicy</h3>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total_users }}</p>
-        </div>
-    </div>
+    <div class="row">
+        <div class="col-lg-8">
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0"><i class="bi bi-calendar-check me-2 text-success"></i>Nadchodzące i aktywne rezerwacje</h3>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_bookings %}
+                        <div class="list-group list-group-flush">
+                            {% for booking in upcoming_bookings %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                                <div>
+                                    <h5 class="mb-1">Rezerwacja: {{ booking.start_date|date:"d.m.Y" }} - {{ booking.end_date|date:"d.m.Y" }}</h5>
+                                    <p class="mb-1 text-muted">Goście: {{ booking.number_of_guests }}, Cena: <strong>{{ booking.total_price }} PLN</strong></p>
+                                    <span class="badge 
+                                        {% if booking.status == 'checked_in' %} bg-success
+                                        {% elif booking.status == 'pending' %} bg-warning text-dark
+                                        {% else %} bg-info text-dark {% endif %}">
+                                        {{ booking.get_status_display }}
+                                    </span>
+                                </div>
+                                <a href="{% url 'accommodation_facilities:booking_detail' booking.id %}" class="btn btn-sm btn-outline mt-2 mt-md-0">
+                                    Szczegóły <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak nadchodzących rezerwacji. Może czas coś zaplanować?</p>
+                        <a href="{% url 'accommodation_facilities:offer' %}" class="btn btn-primary">Zobacz naszą ofertę</a>
+                    {% endif %}
+                </div>
+            </div>
 
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Informacje o bieżącym sezonie</h2>
-        {% if current_season %}
-            <h3 class="text-xl font-semibold text-[#C68335]">{{ current_season.season_name }}</h3>
-            <p class="text-gray-600 dark:text-gray-300">Trwa od {{ current_season.start_date|date:"d.m.Y" }} do {{ current_season.end_date|date:"d.m.Y" }}</p>
-            <p class="text-lg font-bold mt-2">Cena za noc: {{ current_season.price_per_night }} PLN</p>
-            {% if current_season.included_services.all %}
-                <p class="mt-2 text-gray-700 dark:text-gray-300">Usługi w cenie:</p>
-                <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
-                    {% for service in current_season.included_services.all %}
-                        <li>{{ service.aditional_service }}</li>
-                    {% endfor %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0"><i class="bi bi-clock-history me-2 text-muted"></i>Historia rezerwacji</h3>
+                </div>
+                <div class="card-body">
+                    {% if past_bookings %}
+                        <div class="list-group list-group-flush">
+                            {% for booking in past_bookings %}
+                                <div class="list-group-item">
+                                    <p class="mb-1 text-muted">Rezerwacja: {{ booking.start_date|date:"d.m.Y" }} - {{ booking.end_date|date:"d.m.Y" }}</p>
+                                    <span class="badge bg-secondary">{{ booking.get_status_display }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak historycznych rezerwacji.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-circle display-3 text-primary"></i>
+                    <h4 class="card-title mt-3">{{ request.user.first_name }} {{ request.user.last_name }}</h4>
+                    <p class="text-muted">{{ request.user.email }}</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h3 class="h5 mb-0"><i class="bi bi-bar-chart-line me-2"></i>Twoje statystyki</h3>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Łączna liczba rezerwacji: <strong>{{ user_stats.total_bookings }}</strong></li>
+                    <li class="list-group-item">Łączna liczba nocy: <strong>{{ user_stats.total_nights_stayed }}</strong></li>
+                    <li class="list-group-item">Łącznie wydano: <strong>{{ user_stats.total_spent|floatformat:2 }} PLN</strong></li>
                 </ul>
-            {% endif %}
-        {% else %}
-            <p class="text-gray-600 dark:text-gray-400">Obecnie nie trwa żaden zdefiniowany sezon. Obowiązuje cena standardowa.</p>
-        {% endif %}
-    </div>
-
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Aktywne i nadchodzące rezerwacje</h2>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white dark:bg-gray-800">
-                <thead class="bg-gray-200 dark:bg-gray-700">
-                    <tr>
-                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Użytkownik</th>
-                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Przyjazd</th>
-                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Wyjazd</th>
-                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Goście</th>
-                        <th class="py-2 px-4 text-left text-gray-600 dark:text-gray-300">Status</th>
-                        <th class="py-2 px-4 text-right text-gray-600 dark:text-gray-300">Cena całkowita</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in upcoming_bookings %}
-                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.user.username }}</td>
-                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.start_date|date:"d.m.Y" }}</td>
-                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.end_date|date:"d.m.Y" }}</td>
-                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200">{{ booking.number_of_guests }}</td>
-                        <td class="py-2 px-4 text-gray-800 dark:text-gray-200"><span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ booking.get_status_display }}</span></td>
-                        <td class="py-2 px-4 text-right text-gray-800 dark:text-gray-200 font-bold">{{ booking.total_price }} PLN</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">Brak nadchodzących rezerwacji.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            </div>
+            
+            <div class="card shadow-sm mt-4 text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Gotowy na kolejną przygodę?</h5>
+                    <p class="card-text">Sprawdź dostępne terminy i zarezerwuj swój pobyt.</p>
+                    <a href="{% url 'accommodation_facilities:create_booking' %}" class="btn btn-primary custom-button">Zarezerwuj teraz!</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
