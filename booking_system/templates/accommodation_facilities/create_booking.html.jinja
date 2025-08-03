@@ -25,7 +25,6 @@
                     <form method="post" id="booking-form">
                         {% csrf_token %}
 
-                        {# WYŚWIETLANIE WSZYSTKICH BŁĘDÓW FORMULARZA DLA CELÓW DEBUGOWANIA #}
                         {% if form.errors %}
                             <div class="alert alert-danger" role="alert">
                                 <strong>Proszę poprawić następujące błędy:</strong>
@@ -36,7 +35,6 @@
                                                 <li>{{ error }}</li>
                                             {% endfor %}
                                         {% else %}
-                                            {# Uproszczono wyświetlanie nazwy pola, aby uniknąć błędu składni #}
                                             <li><strong>{{ field_name }}:</strong>
                                                 <ul class="list-unstyled ps-3">
                                                     {% for error in errors %}
@@ -51,13 +49,13 @@
                         {% endif %}
 
                         {% for field in form %}
-                            <div class="mb-3"> {# Bootstrap margin bottom for spacing #}
+                            <div class="mb-3">
                                 {% if field.field.widget.input_type == 'checkbox' or field.field.widget.input_type == 'radio' %}
                                     <label class="form-label">{{ field.label }}</label>
                                     <div id="additional-services-container">
                                         {% for choice in field %}
                                             <div class="form-check additional-service-item" data-service-id="{{ choice.data.value }}">
-                                                {{ choice.tag }} {# This renders the <input type="checkbox"> #}
+                                                {{ choice.tag }}
                                                 <label class="form-check-label" for="{{ choice.id_for_label }}">
                                                     {{ choice.choice_label }}
                                                 </label>
@@ -66,13 +64,12 @@
                                     </div>
                                 {% else %}
                                     <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                    {{ field }} {# This will render the input with form-control class if defined in forms.py #}
+                                    {{ field }}
                                 {% endif %}
 
                                 {% if field.help_text %}
                                     <div class="form-text text-muted">{{ field.help_text }}</div>
                                 {% endif %}
-                                {# Błędy dla pojedynczego pola są wyświetlane tutaj #}
                                 {% if field.errors %}
                                     <ul class="errorlist">
                                         {% for error in field.errors %}
@@ -83,14 +80,13 @@
                             </div>
                         {% endfor %}
 
-                        {# Miejsce na wyświetlanie dynamicznej ceny #}
                         <div class="text-center mt-4">
                             <h4 id="total-price-display">Cena całkowita: -- PLN</h4>
                             <div id="price-breakdown-display" class="text-start text-muted small mt-2"></div>
-                            <div id="loading-indicator" class="d-none loading-spinner"></div> {# Bootstrap d-none for hidden #}
+                            <div id="loading-indicator" class="d-none loading-spinner"></div>
                         </div>
 
-                        <div class="d-grid mt-4"> {# d-grid for full-width button #}
+                        <div class="d-grid mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 Zarezerwuj
                             </button>
@@ -142,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const endDate = endDateInput.value;
         const numberOfAdults = adultsInput.value;
         const numberOfChildren = childrenInput.value;
-
         const userSelectedServicesForAjax = Array.from(additionalServicesCheckboxes)
             .filter(checkbox => checkbox.checked && !checkbox.disabled)
             .map(checkbox => checkbox.value);
@@ -164,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         loadingIndicator.classList.remove('d-none');
-
         try {
             const response = await fetch('{% url "accommodation_facilities:calculate_booking_price_ajax" %}', {
                 method: 'POST',
@@ -186,8 +180,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.ok) {
                 totalPriceDisplay.textContent = `Cena całkowita: ${data.total_price.toFixed(2)} PLN`;
-                let breakdownHtml = `<ul class="list-unstyled">
-                    <li>Zakwaterowanie: <strong>${data.accommodation_subtotal_price.toFixed(2)} PLN</strong></li>`;
+
+                // NOWA, SZCZEGÓŁOWA LOGIKA TWORZENIA PODSUMOWANIA
+                let breakdownHtml = `<ul class="list-unstyled mb-0">`;
+                breakdownHtml += `<li>Zakwaterowanie: <strong>${data.accommodation_subtotal_price.toFixed(2)} PLN</strong></li>`;
+
+                // Wyświetlanie usług wliczonych w cenę sezonu
+                if (data.included_services_details && data.included_services_details.length > 0) {
+                    breakdownHtml += `<li>Usługi w cenie sezonu:`;
+                    breakdownHtml += `<ul class="list-unstyled ps-3">`;
+                    data.included_services_details.forEach(service => {
+                        breakdownHtml += `<li><small><i class="bi bi-check-circle-fill text-success me-1"></i>${service.name}</small></li>`;
+                    });
+                    breakdownHtml += `</ul></li>`;
+                }
+
+                // Wyświetlanie płatnych usług dodatkowych
+                if (data.detailed_services_breakdown && data.detailed_services_breakdown.length > 0) {
+                    breakdownHtml += `<li>Usługi dodatkowe:`;
+                    breakdownHtml += `<ul class="list-unstyled ps-3">`;
+                    data.detailed_services_breakdown.forEach(service => {
+                        breakdownHtml += `<li><small>- ${service.name} ${service.note}: <strong>${service.total.toFixed(2)} PLN</strong></small></li>`;
+                    });
+                    breakdownHtml += `</ul></li>`;
+                }
+                
+                if (data.extra_guest_fee > 0) {
+                    breakdownHtml += `<li class="text-danger">Opłata za dodatkowych gości: <strong>${data.extra_guest_fee.toFixed(2)} PLN</strong></li>`;
+                }
+                breakdownHtml += `</ul>`;
+                priceBreakdownDisplay.innerHTML = breakdownHtml;
 
                 lastLockedServicesIds = data.locked_services_ids || [];
 
@@ -209,16 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                if (data.additional_services_subtotal_price > 0 || data.is_seasonal_services_locked) {
-                    breakdownHtml += `<li>Usługi dodatkowe: <strong>${data.additional_services_subtotal_price.toFixed(2)} PLN</strong></li>`;
-                }
-                
-                if (data.extra_guest_fee > 0) {
-                    breakdownHtml += `<li class="text-danger">Opłata za dodatkowych gości: <strong>${data.extra_guest_fee.toFixed(2)} PLN</strong></li>`;
-                }
-                breakdownHtml += `</ul>`;
-                priceBreakdownDisplay.innerHTML = breakdownHtml;
-
             } else {
                 totalPriceDisplay.textContent = 'Błąd obliczania ceny';
                 priceBreakdownDisplay.innerHTML = `<p class="text-danger">${data.error || 'Wystąpił nieoczekiwany błąd.'}</p>`;
@@ -234,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function debounceUpdatePrice() {
         clearTimeout(requestDebounceTimer);
-        requestDebounceTimer = setTimeout(updatePrice, 300); // Czekaj 300ms przed wysłaniem zapytania
+        requestDebounceTimer = setTimeout(updatePrice, 300);
     }
 
     [accommodationSelect, startDateInput, endDateInput, adultsInput, childrenInput].forEach(el => {
@@ -247,8 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     form.addEventListener('submit', function(event) {
-        // Przed wysłaniem formularza, upewnij się, że wyłączone checkbox'y są ponownie włączone,
-        // aby ich wartości zostały przesłane do widoku Django.
         additionalServiceItems.forEach(item => {
             const checkbox = item.querySelector('input[type="checkbox"]');
             if (checkbox && checkbox.disabled) {
@@ -257,7 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Initial price calculation on page load
     updatePrice();
 });
 </script>

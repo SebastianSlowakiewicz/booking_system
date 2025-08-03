@@ -1,12 +1,17 @@
 {% extends "base.html.jinja" %}
 
-{% block title %}Moje Konto - {{ block.super }}{% endblock %}
+{% block title %}Moje Konto - {{ request.user.username }}{% endblock %}
 
+{% block slide_one_caption %}<h2>Moje Konto</h2>
+<p>Witaj, {{ request.user.username }}!</p>{% endblock %}
+{% block slide_two_caption %}<h2>Moje Konto</h2>
+<p>Witaj, {{ request.user.username }}!</p>{% endblock %}
+{% block slide_three_caption %}<h2>Moje Konto</h2>
+<p>Witaj, {{ request.user.username }}!</p>{% endblock %}
 {% block content %}
 <div class="container mt-5 mb-5">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="title1">Witaj, {{ request.user.username }}!</h1>
         <a href="{% url 'logout' %}" class="btn btn-outline-danger">
             <i class="fas fa-sign-out-alt me-2"></i> Wyloguj się
         </a>

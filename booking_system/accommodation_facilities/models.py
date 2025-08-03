@@ -1,10 +1,10 @@
 from django.db import models
 from datetime import date, timedelta
 from django.core.exceptions import ValidationError
-from users.models import Users # Upewnij się, że ten import jest poprawny dla Twojego modelu użytkownika
+from users.models import Users 
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
-from decimal import Decimal # Import Decimal dla precyzyjnych obliczeń pieniężnych
+from decimal import Decimal
 
 class Amenity(models.Model):
     ROOM_TYPES = [
@@ -22,6 +22,7 @@ class Amenity(models.Model):
 
     def __str__(self):
         return self.amenity
+        
     class Meta:
         verbose_name = "Udogodnienie"
         verbose_name_plural = "Udogodnienia"
@@ -37,18 +38,31 @@ class Status(models.Model):
         ("checked_in", "Zameldowane"),
         ("checked_out", "Wymeldowane"),
     ]
-  
+
 
 class Aditional_service(models.Model):
+    CALCULATION_CHOICES = [
+        ('per_stay', 'Opłata jednorazowa'),
+        ('per_night', 'Opłata za dobę'),
+    ]
+
     aditional_service = models.CharField(max_length=50, verbose_name="Usługa dodatkowa")
     description = models.TextField(blank=True, null=True, verbose_name="Opis usługi dodatkowej")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Cena usługi dodatkowej", default=0.00)
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Cena usługi", default=0.00)
+    calculation_method = models.CharField(
+        max_length=10,
+        choices=CALCULATION_CHOICES,
+        default='per_stay',
+        verbose_name="Sposób naliczania"
+    )
 
     def __str__(self):
-        return self.aditional_service
+        return f"{self.aditional_service} ({self.price:.2f} PLN / {self.get_calculation_method_display()})"
+    
     class Meta:
         verbose_name = "Dodatkowa usługa"
         verbose_name_plural = "Dodatkowe usługi"
+
 
 class Accommodation(models.Model):
     ACCOMMODATION_TYPES = [
@@ -89,13 +103,12 @@ class Accommodation(models.Model):
         return f"{self.name} ({self.address.city})" if hasattr(self, "address") else self.name
 
     def get_price_for_date(self, query_date: date):
-        """Pobiera cenę za noc dla danej daty, uwzględniając ceny sezonowe."""
         seasonal = self.seasonal_prices.filter(start_date__lte=query_date, end_date__gte=query_date).first()
         return seasonal.price_per_night if seasonal else self.price_per_night
 
     def is_available_for_dates(self, start_date, end_date):
-        """Sprawdza, czy zakwaterowanie jest dostępne w danym zakresie dat."""
         return not self.bookings.filter(start_date__lt=end_date, end_date__gt=start_date).exists()
+        
     class Meta:
         verbose_name = "Obiekt"
         verbose_name_plural = "Obiekty i ceny sezonowe"
@@ -114,13 +127,14 @@ class Address(models.Model):
         if self.apartment_number:
             parts.append(f"/{self.apartment_number}")
         return f"{' '.join(parts)}, {self.postal_code} {self.city}, {self.country}"
+        
     class Meta:
         verbose_name = "Adres obiektu"
         verbose_name_plural = "Adresy obiektów"
 
 class SeasonalPrice(models.Model):
     season_name = models.CharField(max_length=100, verbose_name="Nazwa sezonu", help_text="Nazwa sezonu, np. 'Lato 2025'", blank=True)
-    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name="seasonal_prices", verbose_name="Zakwaterowanie", default="Janicka Chata")
+    accommodation = models.ForeignKey(Accommodation, on_delete=models.CASCADE, related_name="seasonal_prices", verbose_name="Zakwaterowanie")
     start_date = models.DateField(verbose_name="Data początkowa sezonu")
     end_date = models.DateField(verbose_name="Data końcowa sezonu")
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Cena za noc w sezonie", default=0.00)
@@ -153,7 +167,6 @@ class Booking(models.Model):
         on_delete=models.CASCADE,
         related_name="bookings",
         verbose_name="Zakwaterowanie",
-        # default="Janicka Chata", # Usuń lub zmień to w produkcji, gdy będziesz mieć prawdziwe dane
     )
     user = models.ForeignKey(Users, on_delete=models.CASCADE, verbose_name="Użytkownik dokonujący rezerwacji")
     start_date = models.DateField(verbose_name="Data przyjazdu")
@@ -164,8 +177,6 @@ class Booking(models.Model):
     accommodation_subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Cena zakwaterowania")
     additional_services_subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Cena usług dodatkowych")
     extra_guest_fee = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=Decimal('0.00'), verbose_name="Opłata za dodatkowych gości")
-
-
     additional_services = models.ManyToManyField(
         'Aditional_service',
         blank=True,
@@ -184,6 +195,12 @@ class Booking(models.Model):
     def __str__(self):
         return f"Rezerwacja dla {self.accommodation.name} , zarezerwowane przez {self.user.username} od {self.start_date} do {self.end_date}"
 
+    @property
+    def num_nights(self):
+        if self.start_date and self.end_date:
+            return (self.end_date - self.start_date).days
+        return 0
+    
     def clean(self):
         if self.start_date >= self.end_date:
             raise ValidationError("Data początkowa musi być wcześniejsza niż data końcowa.")
@@ -202,15 +219,10 @@ class Booking(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         is_new = self.pk is None
-        # Zapisz instancję, aby mieć pewność, że ma PK przed calculate_total_price
         super().save(*args, **kwargs)
 
-        # Oblicz total_price i subtotal_prices.
-        # Używamy update_fields, aby uniknąć rekurencji, jeśli calculate_total_price
-        # zmienia pola, które wywołują save.
         self.calculate_total_price()
         super().save(update_fields=["total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee"])
-
 
     def calculate_total_price(self):
         accommodation_price = Decimal('0.00')
@@ -219,16 +231,36 @@ class Booking(models.Model):
 
         num_nights = (self.end_date - self.start_date).days
         if num_nights <= 0:
-            # Jeśli data wyjazdu jest taka sama lub wcześniejsza niż data przyjazdu,
-            # ustaw ceny na 0 i zakończ
             self.accommodation_subtotal_price = Decimal('0.00')
             self.additional_services_subtotal_price = Decimal('0.00')
             self.extra_guest_fee = Decimal('0.00')
             self.total_price = Decimal('0.00')
             return
 
-        # Sprawdź, czy dla rezerwacji obowiązuje cena sezonowa i jakie usługi są wliczone
-        # Zakładamy, że jeśli jakikolwiek dzień w rezerwacji jest w sezonie, to usługi są blokowane
+        # Ulepszona logika obliczania ceny zakwaterowania
+        # Pobieramy wszystkie sezony cenowe, które pokrywają się z okresem rezerwacji
+        overlapping_seasons = self.accommodation.seasonal_prices.filter(
+            start_date__lt=self.end_date,
+            end_date__gte=self.start_date
+        ).order_by('start_date')
+
+        price_map = {}
+        # Wypełniamy mapę ceną domyślną dla każdego dnia rezerwacji
+        current_date = self.start_date
+        while current_date < self.end_date:
+            price_map[current_date] = self.accommodation.price_per_night
+            current_date += timedelta(days=1)
+
+        # Nadpisujemy ceny dniami z cenami sezonowymi
+        for season in overlapping_seasons:
+            iter_date = max(self.start_date, season.start_date)
+            while iter_date <= min(self.end_date - timedelta(days=1), season.end_date):
+                price_map[iter_date] = season.price_per_night
+                iter_date += timedelta(days=1)
+        
+        accommodation_price = sum(price_map.values())
+        
+        # Logika obliczania cen za usługi dodatkowe
         seasonal_prices_in_range = SeasonalPrice.objects.filter(
             accommodation=self.accommodation,
             start_date__lte=self.end_date,
@@ -241,39 +273,67 @@ class Booking(models.Model):
                 for service in sp.included_services.all():
                     included_services_in_season.add(service.pk)
 
-        # Obliczanie ceny zakwaterowania
-        current_date = self.start_date
-        while current_date < self.end_date:
-            accommodation_price += self.accommodation.get_price_for_date(current_date)
-            current_date += timedelta(days=1)
-
-        # Obliczanie ceny usług dodatkowych
-        # Usługi wliczone w cenę sezonową nie są dodawane do 'services_price'
         for service in self.additional_services.all():
             if service.pk not in included_services_in_season:
-                services_price += service.price
+                if service.calculation_method == 'per_night':
+                    services_price += service.price * num_nights
+                else:
+                    services_price += service.price
 
-        # Obliczanie opłaty za dodatkowych gości
         total_guests = self.number_of_adults + self.number_of_children
         if total_guests > 6:
             extra_guests = total_guests - 6
-            extra_guest_cost = Decimal(str(extra_guests * 50)) * num_nights # 50 PLN za osobę za dobę
+            extra_guest_cost = Decimal(str(extra_guests * 50)) * num_nights
 
         self.accommodation_subtotal_price = accommodation_price
         self.additional_services_subtotal_price = services_price
         self.extra_guest_fee = extra_guest_cost
         self.total_price = accommodation_price + services_price + extra_guest_cost
+    
+
+    def get_detailed_services(self):
+        details = []
+        num_nights = (self.end_date - self.start_date).days
+        if num_nights <= 0:
+            return []
+
+        seasonal_prices = self.accommodation.seasonal_prices.filter(
+            start_date__lte=self.end_date, end_date__gte=self.start_date
+        )
+        included_services_pks = set()
+        for season in seasonal_prices:
+            included_services_pks.update(season.included_services.values_list('pk', flat=True))
+
+        for service in self.additional_services.all():
+            is_included = service.pk in included_services_pks
+            total_price = Decimal('0.00')
+            note = ""
+
+            if is_included:
+                note = "(w cenie sezonu)"
+            else:
+                if service.calculation_method == 'per_night':
+                    total_price = service.price * num_nights
+                    note = f"({service.price:.2f} PLN x {num_nights} nocy)"
+                else:
+                    total_price = service.price
+                    note = "(opłata jednorazowa)"
+            
+            details.append({
+                'name': service.aditional_service,
+                'total_price': total_price,
+                'note': note,
+                'is_included': is_included,
+            })
+        return details
 
     @property
     def number_of_guests(self):
         return self.number_of_adults + self.number_of_children
     number_of_guests.fget.short_description = "Liczba gości"
 
-
 @receiver(m2m_changed, sender=Booking.additional_services.through)
 def update_booking_total_price(sender, instance, action, **kwargs):
-    # Upewnij się, że instance ma już PK (jest zapisana)
     if instance.pk and action in ["post_add", "post_remove", "post_clear"]:
         instance.calculate_total_price()
-        # Zapisz tylko zmienione pola, aby uniknąć rekurencji
         instance.save(update_fields=["total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee"])

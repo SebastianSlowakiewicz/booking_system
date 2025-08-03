@@ -100,48 +100,10 @@ document.addEventListener('DOMContentLoaded', function () {
         checkScrollArrows(); // Sprawdź stan początkowy
     }
 
-    /**
-     * Funkcja obsługująca wyskakujące powiadomienia (toasty) z ofertami specjalnymi.
-     */
-    function handleSpecialOfferToasts() {
-        const specialOfferToasts = document.querySelectorAll('.toast-rich-offer');
-        
-        if (specialOfferToasts.length === 0) {
-            return;
-        }
-
-        specialOfferToasts.forEach((toastEl, index) => {
-            const toast = new bootstrap.Toast(toastEl, {
-                autohide: true,
-                delay: 8000
-            });
-
-            const progressBar = toastEl.querySelector('.toast-progress-bar-inner');
-
-            toastEl.addEventListener('mouseover', () => {
-                if (progressBar) progressBar.style.animationPlayState = 'paused';
-            });
-
-            toastEl.addEventListener('mouseout', () => {
-                if (progressBar) progressBar.style.animationPlayState = 'running';
-            });
-            
-            toastEl.addEventListener('hidden.bs.toast', () => {
-                if (progressBar) progressBar.style.animation = 'none';
-            });
-
-            setTimeout(() => {
-                if (progressBar) progressBar.style.animation = 'shrink 8s linear forwards';
-                toast.show();
-            }, 1000 * (index + 1));
-        });
-    }
-
-    // Wywołanie wszystkich funkcji inicjujących
+    
     handleNavbarScroll();
     handleScrollToTopButton();
     handleOfferSlider();
-    handleSpecialOfferToasts();
 });
 
 document.addEventListener('DOMContentLoaded', function() {

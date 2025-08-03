@@ -19,54 +19,10 @@ Janicka Chata
 {% block slide_three_caption %}
     <h2>Poczuj się jak w domu</h2>
     <p>Czeka na Ciebie w pełni wyposażony, przytulny domek. Zarezerwuj swój pobyt!</p>
+
 {% endblock %}
 
 {% block content %}
-{% if special_offers %}
-<div class="toast-container position-fixed bottom-0 end-0 p-3" role="alert" aria-live="assertive" aria-atomic="true">
-  {% for offer in special_offers %}
-    <div class="toast toast-rich-offer" role="alert" aria-live="assertive" aria-atomic="true" id="specialOfferToast{{ forloop.counter }}">
-      <div class="toast-header">
-        <strong class="me-auto fw-bold"><i class="bi bi-stars"></i>Oferta Specjalna</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body">
-        <div class="toast-rich-image-wrapper">
-            {% if offer.photo and offer.photo.url %}
-                <img src="{{ offer.photo.url }}" alt="Zdjęcie oferty: {{ offer.season_name }}">
-            {% else %}
-                <img src="https://placehold.co/120x120/c68335/FFFFFF?text={{ offer.season_name|slice:':1'|upper }}" alt="Brak zdjęcia dla: {{ offer.season_name }}">
-            {% endif %}
-        </div>
-        <div class="toast-rich-content-wrapper">
-          <h6 class="offer-title">{{ offer.season_name }}</h6>
-          <div class="offer-price">{{ offer.price_per_night }} zł <small>/ doba</small></div>
-        </div>
-      </div>
-      <div class="toast-footer">
-         <ul class="offer-details-list">
-             <li><i class="bi bi-calendar-check"></i> <div><strong>Termin:</strong> {{ offer.start_date|date:"d.m" }} - {{ offer.end_date|date:"d.m.Y" }}</div></li>
-             {% if offer.included_services.all %}
-                 <li>
-                     <i class="bi bi-patch-check"></i>
-                     <div>
-                         <strong>W cenie:</strong>
-                         {{ offer.included_services.all|join:", " }}
-                     </div>
-                 </li>
-             {% endif %}
-         </ul>
-         <a href="{% url 'accommodation_facilities:offer' %}" class="btn btn-offer-details">
-             Zobacz szczegóły
-         </a>
-      </div>
-      <div class="toast-progress-bar">
-        <div class="toast-progress-bar-inner"></div>
-      </div>
-    </div>
-  {% endfor %}
-</div>
-{% endif %}
     <section class="ver1" id="cytat">
         <div class="title1"><h2>Komfort i relaks czekają na Ciebie!</h2></div>
         <h6>Zanurz się w górskim klimacie i wypocznij w przytulnym domku, blisko stoków i term.</h6> 

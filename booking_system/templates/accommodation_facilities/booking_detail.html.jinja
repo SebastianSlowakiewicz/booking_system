@@ -1,15 +1,12 @@
 {% extends "base.html.jinja" %}
 
 {% block title %}Szczegóły rezerwacji #{{ booking.id }} - {{ block.super }}{% endblock %}
-{% block slide_one_caption %}<h2>Szczegóły rezerwacji</h2>{% endblock %}
-{% block slide_two_caption %}<h2>Szczegóły rezerwacji</h2>{% endblock %}
-{% block slide_three_caption %}<h2>Szczegóły rezerwacji</h2>{% endblock %}
+{% block slide_one_caption %}<h2>Szczegóły rezerwacji #{{ booking.id }}</h2>{% endblock %}
+{% block slide_two_caption %}<h2>Szczegóły rezerwacji #{{ booking.id }}</h2>{% endblock %}
+{% block slide_three_caption %}<h2>Szczegóły rezerwacji #{{ booking.id }}</h2>{% endblock %}
 {% block content %}
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="title1">Rezerwacja #{{ booking.id }}</h1>
-        
-        {# --- POPRAWIONY PRZYCISK POWROTU --- #}
         <a href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i> Powrót do panelu
         </a>
@@ -29,7 +26,13 @@
                         </div>
                         <div class="col-md-6">
                             <h6 class="text-muted">Termin</h6>
-                            <p>{{ booking.start_date|date:"d.m.Y" }} - {{ booking.end_date|date:"d.m.Y" }}</p>
+                            <p>
+                                {{ booking.start_date|date:"d.m.Y" }} - {{ booking.end_date|date:"d.m.Y" }}
+                                <br>
+                                <small class="text-success fw-bold">
+                                    ({{ booking.num_nights }} {% if booking.num_nights == 1 %}noc{% elif booking.num_nights < 5 %}noce{% elif booking.num_nights >= 5 %}nocy{% endif %})
+                                </small>
+                            </p>
                         </div>
                     </div>
                      <div class="row mt-3">
@@ -56,10 +59,35 @@
                         <span>Cena za nocleg:</span>
                         <strong>{{ booking.accommodation_subtotal_price|default:"0.00" }} PLN</strong>
                     </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Usługi dodatkowe:</span>
-                        <strong>{{ booking.additional_services_subtotal_price|default:"0.00" }} PLN</strong>
-                    </li>
+                    {% if booking.additional_services.all %}
+                        <li class="list-group-item">
+                            <span>Usługi dodatkowe:</span>
+                        </li>
+                        
+                        {% for service in booking.additional_services.all %}
+                        <li class="list-group-item d-flex justify-content-between ps-4">
+                            <span class="text-muted">- {{ service.aditional_service }}</span>
+                            <strong>
+                                {{ service.price|floatformat:2 }}
+                                {% if service.calculation_method == 'per_night' %}
+                                    PLN / doba
+                                {% else %}
+                                    PLN
+                                {% endif %}
+                            </strong>
+                        </li>
+                        {% endfor %}
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Suma za usługi:</span>
+                            <strong>{{ booking.additional_services_subtotal_price|floatformat:2 }} PLN</strong>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Usługi dodatkowe:</span>
+                            <strong>Brak</strong>
+                        </li>
+                    {% endif %}
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Dopłata za gości:</span>
                         <strong>{{ booking.extra_guest_fee|default:"0.00" }} PLN</strong>
@@ -81,7 +109,12 @@
             {% if booking.additional_services.all %}
                 <ul class="list-unstyled">
                 {% for service in booking.additional_services.all %}
-                    <li><i class="fas fa-check-circle text-success me-2"></i>{{ service.aditional_service }} ({{ service.price }} PLN)</li>
+                    <li><i class="fas fa-check-circle text-success me-2"></i>{{ service.aditional_service }} {{ service.price }} 
+                        {% if service.calculation_method == 'per_night' %}
+                        PLN / doba
+                    {% else %}
+                        PLN
+                    {% endif %}</li>
                 {% endfor %}
                 </ul>
             {% else %}
