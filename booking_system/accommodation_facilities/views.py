@@ -8,7 +8,7 @@ from datetime import date, timedelta
 import json
 from decimal import Decimal
 from .forms import BookingForm
-from .models import Accommodation, Booking, Aditional_service, SeasonalPrice
+from .models import Accommodation, Booking, Aditional_service, SeasonalPrice, Notification
 
 @login_required
 def create_booking(request):
@@ -80,7 +80,6 @@ def calculate_booking_price_ajax(request):
         num_nights = (end_date - start_date).days
         accommodation_price = Decimal('0.00')
 
-        # Ulepszona logika obliczania ceny zakwaterowania
         if num_nights > 0:
             overlapping_seasons = accommodation.seasonal_prices.filter(
                 start_date__lt=end_date,
@@ -101,7 +100,6 @@ def calculate_booking_price_ajax(request):
             
             accommodation_price = sum(price_map.values())
 
-        # ... (reszta logiki funkcji calculate_booking_price_ajax pozostaje taka sama)
         services_price = Decimal('0.00')
         extra_guest_fee = Decimal('0.00')
         detailed_services_breakdown = []
@@ -225,3 +223,16 @@ def booking_detail(request, booking_id):
 
     context = {'booking': booking}
     return render(request, "accommodation_facilities/booking_detail.html.jinja", context)
+
+# --- NOWE FUNKCJE DLA STRONY GŁÓWNEJ I OFERT SPECJALNYCH ---
+
+
+def accommodation_detail(request, pk):
+    """
+    Widok szczegółów obiektu noclegowego, do którego prowadzi link z oferty.
+    """
+    accommodation_obj = get_object_or_404(Accommodation, pk=pk)
+    context = {
+        'accommodation': accommodation_obj,
+    }
+    return render(request, 'accommodation_facilities/accommodation_detail.html.jinja', context)

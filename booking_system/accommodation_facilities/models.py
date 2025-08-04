@@ -337,3 +337,24 @@ def update_booking_total_price(sender, instance, action, **kwargs):
     if instance.pk and action in ["post_add", "post_remove", "post_clear"]:
         instance.calculate_total_price()
         instance.save(update_fields=["total_price", "accommodation_subtotal_price", "additional_services_subtotal_price", "extra_guest_fee"])
+
+
+class Notification(models.Model):
+    seasonal_price = models.OneToOneField(
+        SeasonalPrice, 
+        on_delete=models.CASCADE, 
+        verbose_name="Cena sezonowa źródłowa",
+        related_name='notification_details'
+    )
+    title = models.CharField(max_length=200, verbose_name="Tytuł powiadomienia")
+    message = models.TextField(verbose_name="Treść powiadomienia")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data utworzenia")
+    is_active = models.BooleanField(default=True, verbose_name="Aktywne")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Powiadomienie o ofercie specjalnej"
+        verbose_name_plural = "Powiadomienia o ofertach specjalnych"
+        ordering = ['-created_at']

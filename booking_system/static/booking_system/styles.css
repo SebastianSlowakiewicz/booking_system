@@ -1,4 +1,3 @@
-
 :root {
   --custom-primary-color: #c68335;
   --custom-primary-hover-color: #a96d26;
@@ -917,192 +916,184 @@ html {
 .additional-service-item.disabled-checkbox-item .form-check-input:disabled+.form-check-label {
   cursor: not-allowed;
 }
- /* Główny kontener powiadomienia */
- .toast.toast-rich-offer {
-  width: 390px;
-  max-width: 100%;
-  background-color: #ffffff; /* Jasne tło */
-  color: #212529; /* Ciemny tekst */
-  border-radius: 12px;
-  border-left: 4px solid #c68335; /* Złoty akcent kolorystyczny */
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  opacity: 0;
-  transform: translateX(25px);
-  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
-  font-family: 'Aleo',serif ;
+/* --- Kompletny zestaw stylów dla powiadomień o ofertach specjalnych --- */
+
+/* Pozycjonowanie kontenera na samej górze */
+.toast-container {
+  z-index: 10000 !important;
+}
+
+/* Główny kontener powiadomienia - wersja połączona i poprawiona */
+.toast.toast-rich-offer {
+width: 390px;
+max-width: 100%;
+background-color: #ffffff; /* Jasne tło */
+color: #212529; /* Ciemny tekst */
+border-radius: 12px;
+border-left: 4px solid #c68335; /* Złoty akcent kolorystyczny */
+box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+opacity: 0;
+transform: translateX(25px);
+font-family: 'Aleo',serif ;
+/* Poprawiona, pojedyncza definicja animacji dla płynnego znikania i pojawiania się */
+transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, color 0.3s ease;
 }
 
 /* Styl dla widocznego toasta (dodawany przez JS) */
 .toast-rich-offer.show {
-  opacity: 1;
-  transform: translateX(0);
-  transition: all 0.4s ease-in-out;
-}
-
-.toast.toast-rich-offer {
-  width: 390px;
-  max-width: 100%;
-  background-color: #ffffff; /* Jasne tło */
-  color: #212529; /* Ciemny tekst */
-  border-radius: 12px;
-  border-left: 4px solid #c68335; /* Złoty akcent kolorystyczny */
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  opacity: 0;
-  transform: translateX(25px);
-  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
-  transition: color 0.3s ease;
+opacity: 1;
+transform: translateX(0);
+transition: all 0.4s ease-in-out;
 }
 
 /* Nagłówek powiadomienia */
 .toast-rich-offer .toast-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-  padding: 0.75rem 1.25rem;
-  color: #c68335;
+background-color: #f8f9fa;
+border-bottom: 1px solid #dee2e6;
+padding: 0.75rem 1.25rem;
+color: #c68335;
 }
 
 .toast-rich-offer .toast-header .fw-bold {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+font-size: 0.9rem;
+text-transform: uppercase;
+letter-spacing: 0.8px;
+display: flex;
+align-items: center;
+gap: 0.5rem;
 }
 
 .toast-rich-offer .btn-close {
-  filter: none; 
+filter: none;
 }
 
+/* Główna treść i stopka powiadomienia */
 .toast-rich-offer .toast-body,
 .toast-footer {
-  padding: 1.25rem;
+padding: 1.25rem;
 }
 .toast-footer {
-  padding-top: 0;
+padding-top: 0;
 }
 
 .toast-rich-offer .toast-body {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+display: flex;
+align-items: center;
+gap: 1rem;
 }
 
 /* Kontener na zdjęcie */
 .toast-rich-image-wrapper {
-  flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 2px solid #dee2e6;
+flex-shrink: 0;
+width: 80px;
+height: 80px;
+border-radius: 8px;
+overflow: hidden;
+border: 2px solid #dee2e6;
 }
 
 .toast-rich-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 
 /* Kontener na tekst i cenę */
 .toast-rich-content-wrapper {
-  flex-grow: 1;
+flex-grow: 1;
 }
 
 .toast-rich-content-wrapper .offer-title {
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin-bottom: 0.25rem;
-  color: #212529;
+font-weight: 600;
+font-size: 1.1rem;
+margin-bottom: 0.25rem;
+color: #212529;
 }
 
 .toast-rich-content-wrapper .offer-price {
-  font-weight: 700;
-  color: #c68335;
-  font-size: 1.3rem;
+font-weight: 700;
+color: #c68335;
+font-size: 1.3rem;
 }
 
 .toast-rich-content-wrapper .offer-price small {
-  color: #6c757d;
-  font-size: 0.8rem;
+color: #6c757d;
+font-size: 0.8rem;
 }
 
 /* Lista szczegółów oferty */
 .offer-details-list {
-  list-style: none;
-  padding-left: 0;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  color: #495057;
+list-style: none;
+padding-left: 0;
+margin-bottom: 1rem;
+font-size: 0.9rem;
+color: #495057;
 }
 
 .offer-details-list li {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
+display: flex;
+align-items: flex-start;
+margin-bottom: 0.5rem;
 }
 
 .offer-details-list .bi {
-  color: #c68335;
-  margin-right: 0.75rem;
-  font-size: 1.1rem;
-  margin-top: 2px;
+color: #c68335;
+margin-right: 0.75rem;
+font-size: 1.1rem;
+margin-top: 2px;
 }
 
 .offer-details-list strong {
-  color: #212529;
-  margin-right: 0.4rem;
+color: #212529;
+margin-right: 0.4rem;
 }
 
-/* --- ZAKTUALIZOWANY STYL PRZYCISKU --- */
+/* Styl przycisku w powiadomieniu */
 .btn-offer-details {
-  background-color: transparent;
-  border: 2px solid #c68335;
-  color: #c68335;
-  font-weight: 700;
-  padding: 0.6rem 1rem;
-  font-size: 0.95rem;
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: none;
-  transition: color 0.3s ease;
-   transition: all 0.3s ease-in-out;
+background-color: transparent;
+border: 2px solid #c68335;
+color: #c68335;
+font-weight: 700;
+padding: 0.6rem 1rem;
+font-size: 0.95rem;
+width: 100%;
+border-radius: 8px;
+box-shadow: none;
+transition: all 0.3s ease-in-out;
 }
 
 .btn-offer-details:hover {
-  background: linear-gradient(45deg, #d9903d, #c68335);
-  color: #ffffff;
-  border-color: #c68335; /* Upewniamy się, że kolor ramki pasuje */
-  transform: translateY(-2px);
-  transition: color 0.3s ease;
-  box-shadow: 0 6px 20px rgba(198, 131, 53, 0.3);
-  transition: all 0.3s ease-in-out;
+background: linear-gradient(45deg, #d9903d, #c68335);
+color: #ffffff;
+border-color: #c68335;
+transform: translateY(-2px);
+box-shadow: 0 6px 20px rgba(198, 131, 53, 0.3);
 }
 
 /* Pasek postępu */
 .toast-progress-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background-color: rgba(198, 131, 53, 0.2);
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 4px;
+background-color: rgba(198, 131, 53, 0.2);
 }
 
 .toast-progress-bar-inner {
-  width: 100%;
-  height: 100%;
-  background-color: #c68335;
-  animation: shrink 8s linear forwards;
-  animation-play-state: running;
-  border-radius: 0 0 0 4px;
+width: 100%;
+height: 100%;
+background-color: #c68335;
+animation: shrink 8s linear forwards;
+animation-play-state: running;
+border-radius: 0 0 0 4px;
 }
 
+/* Animacja paska postępu */
 @keyframes shrink {
-  from { width: 100%; }
-  to { width: 0%; }
+from { width: 100%; }
+to { width: 0%; }
 }
 
 /* Testimonials */
@@ -1258,4 +1249,11 @@ html {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
+}
+
+/* --- OSTATECZNA POPRAWKA Z-INDEX --- */
+/* Nadajemy kontenerowi na toasty najwyższy priorytet wyświetlania, 
+   aby był na wierzchu wszystkich innych elementów, włącznie z niestandardowym paskiem przewijania. */
+.toast-container {
+    z-index: 10000 !important;
 }

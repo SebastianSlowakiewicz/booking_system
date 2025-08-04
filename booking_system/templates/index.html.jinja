@@ -23,13 +23,85 @@ Janicka Chata
 {% endblock %}
 
 {% block content %}
+{% if special_offers %}
+<div class="toast-container position-fixed bottom-0 end-0 p-4">
+    {% for offer in special_offers %}
+        <div class="toast toast-rich-offer" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto fw-bold">
+                    <i class="bi bi-fire"></i>
+                    {{ offer.seasonal_price.season_name|upper|default:"OFERTA SPECJALNA" }}
+                </strong>
+                <small class="text-muted">teraz</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            
+            <div class="toast-body">
+                <div class="toast-rich-image-wrapper">
+                    {# UPROSZCZONA LOGIKA: Sprawdzamy tylko zdjęcie przypisane do oferty sezonowej #}
+                    {% if offer.seasonal_price.photo and offer.seasonal_price.photo.url %}
+                        <img src="{{ offer.seasonal_price.photo.url }}" alt="Zdjęcie oferty: {{ offer.seasonal_price.season_name }}">
+                    
+                    {# Jeśli go nie ma, OD RAZU pokazujemy placeholder #}
+                    {% else %}
+                        <img src="https://placehold.co/80x80/c68335/FFFFFF?text={{ offer.seasonal_price.season_name|first|upper }}" alt="Brak zdjęcia dla: {{ offer.seasonal_price.season_name }}">
+                    {% endif %}
+                </div>
+                <div class="toast-rich-content-wrapper">
+                    <div class="offer-title">{{ offer.seasonal_price.accommodation.name }}</div>
+                    <div class="offer-price">
+                        {{ offer.seasonal_price.price_per_night }} PLN <small>/ doba</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-4">
+                <ul class="offer-details-list">
+                    <li>
+                        <i class="bi bi-calendar-check"></i>
+                        <div><strong>Termin:</strong> {{ offer.seasonal_price.start_date|date:"d.m" }} - {{ offer.seasonal_price.end_date|date:"d.m.Y" }}</div>
+                    </li>
+                    
+                    {% if offer.seasonal_price.description %}
+                    <li>
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div>{{ offer.seasonal_price.description }}</div>
+                    </li>
+                    {% endif %}
+
+                    {% if offer.seasonal_price.included_services.all %}
+                    <li>
+                        <i class="bi bi-patch-check-fill"></i>
+                        <div>
+                            <strong>W cenie:</strong>
+                            {% for service in offer.seasonal_price.included_services.all %}
+                                {{ service.aditional_service }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <div class="toast-footer">
+                 <a href="{% url 'accommodation_facilities:offer' %}" class="btn btn-offer-details">
+                    Zobacz szczegóły oferty
+                 </a>
+            </div>
+
+            <div class="toast-progress-bar">
+                <div class="toast-progress-bar-inner"></div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
     <section class="ver1" id="cytat">
         <div class="title1"><h2>Komfort i relaks czekają na Ciebie!</h2></div>
         <h6>Zanurz się w górskim klimacie i wypocznij w przytulnym domku, blisko stoków i term.</h6> 
         <div class="title2"><h2>Janicka Chata zaprasza!</h2></div>
         <p><a class="btn-outline" href="#about-section">Poznaj nas!</a></p>
     </section>
-
     <section class="ver1" id="about-section">
         <div class="container">
             <div class="row align-items-center d-flex flex-column-reverse flex-md-row">
